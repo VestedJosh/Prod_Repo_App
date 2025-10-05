@@ -1,0 +1,153 @@
+* [integration-tests/load/go.mod]()
+* [integration-tests/load/go.sum]()
+* [package.json]()
+* [system-tests/lib/go.mod]()
+* [system-tests/lib/go.sum]()
+* [system-tests/tests/go.mod]()
+* [system-tests/tests/go.sum]()
+
+This document provides an overview of the Chainlink repository, focusing on its organization, key directories, and module structure. It serves as a guide to help developers navigate the codebase and understand how different components relate to each other. For information about the high-level system architecture, see [System Architecture]().
+
+## Main Repository Organization
+
+The Chainlink repository is organized as a monorepo with multiple Go modules, enabling a clear separation of concerns while maintaining a unified codebase. The repository follows a modular architecture pattern where functionality is divided across several modules, both within this repository and in external repositories.
+
+Sources: [go.mod1]() [integration-tests/go.mod1-8]() [core/scripts/go.mod1-10]() [integration-tests/load/go.mod1-10]() [deployment/go.mod1-6]() [system-tests/tests/go.mod1-14]() [system-tests/lib/go.mod1-12]()
+
+The repository follows a multi-module Go project structure, where each module has its own `go.mod` file that specifies its dependencies. The modules within the repository use the `replace` directive to reference each other, ensuring they use the local code instead of published versions.
+
+## Module Structure and Replace Directives
+
+Sources: [go.mod1]() [deployment/go.mod6]() [integration-tests/go.mod6-8]() [integration-tests/load/go.mod6-10]() [core/scripts/go.mod6-10]() [system-tests/tests/go.mod10-14]() [system-tests/lib/go.mod10-12]()
+
+| Module | Path | Module Name | Description |
+| --- | --- | --- | --- |
+| Main Chainlink Node | / | `github.com/smartcontractkit/chainlink/v2` | Core Chainlink node application and services |
+| Deployment | /deployment | `github.com/smartcontractkit/chainlink/deployment` | Tools and scripts for deploying Chainlink nodes |
+| Integration Tests | /integration-tests | `github.com/smartcontractkit/chainlink/integration-tests` | Integration test suite |
+| System Tests | /system-tests/tests | `github.com/smartcontractkit/chainlink/system-tests/tests` | System-level testing |
+| System Tests Lib | /system-tests/lib | `github.com/smartcontractkit/chainlink/system-tests/lib` | Shared testing utilities |
+| Load Tests | /integration-tests/load | `github.com/smartcontractkit/chainlink/load-tests` | Performance and load testing |
+| Scripts | /core/scripts | `github.com/smartcontractkit/chainlink/core/scripts` | Utility scripts for development and operations |
+
+Sources: [go.mod1]() [deployment/go.mod1]() [integration-tests/go.mod1]() [system-tests/tests/go.mod1]() [system-tests/lib/go.mod1]() [integration-tests/load/go.mod1]() [core/scripts/go.mod1]()
+
+## Module Dependency Structure
+
+Chainlink has evolved to a plugin-based architecture where much of the functionality has been moved to separate repositories. The main repository coordinates and integrates these external modules.
+
+Sources: [go.mod77-94]()
+
+This architecture is reflected in the dependencies listed in the main `go.mod` file, which includes:
+
+```
+github.com/smartcontractkit/chainlink-automation v0.8.1
+github.com/smartcontractkit/chainlink-ccip v0.0.0-20250604161327-989d6ac39ddb
+github.com/smartcontractkit/chainlink-ccip/chains/solana v0.0.0-20250520123946-6aaf88e0848a
+github.com/smartcontractkit/chainlink-common v0.7.1-0.20250605141539-1c982c45a39b
+github.com/smartcontractkit/chainlink-data-streams v0.1.1-0.20250604171706-a98fa6515eae
+github.com/smartcontractkit/chainlink-evm v0.0.0-20250609190927-f1e8aecc0d1c
+github.com/smartcontractkit/chainlink-feeds v0.1.2-0.20250227211209-7cd000095135
+github.com/smartcontractkit/chainlink-solana v1.1.2-0.20250527212035-5d0564786d15
+```
+
+Sources: [go.mod76-88]()
+
+## Frontend Components
+
+The repository also includes JavaScript/TypeScript components, primarily for the Operator UI and development tools.
+
+Sources: [package.json]()
+
+The `package.json` file at the repository root indicates the JavaScript/TypeScript nature of some components, with the project version at 2.25.0 and using technologies like Node.js (>=18) and pnpm (>=10).
+
+## Core Module Organization
+
+The Core module (main Chainlink node) implements the ChainlinkApplication, which coordinates all the services needed to run a Chainlink node.
+
+Sources: [go.mod]()
+
+## Chain Integration Architecture
+
+Chainlink supports multiple blockchain networks through its relayer architecture, which provides adapters for different chains.
+
+Sources: [go.mod77-94]()
+
+Each chain integration provides specific adapters and functionality needed to interact with that particular blockchain:
+
+| Chain | Module | Description |
+| --- | --- | --- |
+| EVM Chains | chainlink-evm | Support for Ethereum and EVM-compatible chains |
+| Solana | chainlink-solana | Support for Solana blockchain |
+| Cosmos | cosmos integration | Support for Cosmos ecosystem |
+| StarkNet | starknet integration | Support for StarkNet L2 solution |
+
+Sources: [go.mod77-94]()
+
+## Testing Framework
+
+Chainlink has a comprehensive testing infrastructure divided across different test types and test suites.
+
+Sources: [integration-tests/go.mod]() [system-tests/tests/go.mod]() [integration-tests/load/go.mod]()
+
+The extensive test modules ensure the reliability and correctness of the Chainlink system across various scenarios:
+
+| Test Type | Location | Purpose |
+| --- | --- | --- |
+| Unit Tests | Within each module | Test individual components in isolation |
+| Integration Tests | /integration-tests | Test interaction between components |
+| System Tests | /system-tests | Test entire system behavior |
+| Load Tests | /integration-tests/load | Test performance and scalability |
+
+Sources: [integration-tests/go.mod]() [system-tests/tests/go.mod]() [integration-tests/load/go.mod]()
+
+## Deployment Infrastructure
+
+The deployment module provides tools and scripts for deploying and managing Chainlink nodes.
+
+Sources: [deployment/go.mod]()
+
+The deployment module includes tools for:
+
+* Configuring and deploying Chainlink nodes
+* Managing node deployments
+* Interacting with container orchestration systems
+* Setting up and managing node infrastructure
+
+## Version Management
+
+The Chainlink repository uses semantic versioning and follows a structured release process.
+
+Sources: [go.mod3-5]() [package.json3]()
+
+The repository is currently at:
+
+* Go module version: v2 (as indicated by `/v2` in the module path)
+* Package.json version: 2.25.0
+* Go version: 1.24.2
+
+## Conclusion
+
+The Chainlink repository follows a well-structured, modular architecture that facilitates the maintenance and extension of the system. The monorepo approach with multiple Go modules allows for clear separation of concerns while keeping related components together. The plugin-based architecture enables supporting multiple blockchain networks and extending the system's capabilities through external modules.
+
+Understanding this repository structure is essential for developers looking to contribute to the Chainlink ecosystem or build upon its functionality.
+
+Dismiss
+
+Refresh this wiki
+
+Enter email to refresh
+
+### On this page
+
+* [Repository Structure]()
+* [Main Repository Organization]()
+* [Module Structure and Replace Directives]()
+* [Module Dependency Structure]()
+* [Frontend Components]()
+* [Core Module Organization]()
+* [Chain Integration Architecture]()
+* [Testing Framework]()
+* [Deployment Infrastructure]()
+* [Version Management]()
+* [Conclusion]()

@@ -1,0 +1,612 @@
+* [core/services/job/job\_orm\_test.go]()
+* [core/services/job/job\_pipeline\_orm\_integration\_test.go]()
+* [core/services/job/mocks/orm.go]()
+* [core/services/job/mocks/service\_ctx.go]()
+* [core/services/job/mocks/spawner.go]()
+* [core/services/job/models.go]()
+* [core/services/job/orm.go]()
+* [core/services/job/runner\_integration\_test.go]()
+* [core/services/job/spawner\_test.go]()
+* [core/services/ocr2/delegate.go]()
+* [core/services/pipeline/mocks/config.go]()
+* [core/services/pipeline/mocks/orm.go]()
+* [core/services/pipeline/mocks/pipeline\_param\_unmarshaler.go]()
+* [core/services/pipeline/mocks/runner.go]()
+* [core/services/relay/evm/evm.go]()
+* [core/store/store.go]()
+* [core/testdata/testspecs/v2\_specs.go]()
+* [core/web/config\_controller.go]()
+* [core/web/jobs\_controller.go]()
+* [core/web/jobs\_controller\_test.go]()
+* [core/web/log\_controller.go]()
+* [core/web/log\_controller\_test.go]()
+* [core/web/pipeline\_runs\_controller.go]()
+* [core/web/pipeline\_runs\_controller\_test.go]()
+* [core/web/presenters/job.go]()
+* [core/web/presenters/job\_test.go]()
+* [core/web/presenters/log.go]()
+* [core/web/resolver/spec.go]()
+* [core/web/resolver/spec\_test.go]()
+* [core/web/router.go]()
+* [core/web/schema/type/spec.graphql]()
+
+This document provides a high-level overview of the Chainlink node architecture, outlining its core components and how they interact with each other. It covers the primary systems that make up the Chainlink node software, their relationships, and execution flows.
+
+This page focuses on the overall system design and component interactions. For detailed information about specific subsystems, see the following pages:
+
+* For Job System details, see [Job System]()
+* For Pipeline System details, see [Pipeline System]()
+* For Chain Integration details, see [Blockchain Integration]()
+* For Web API information, see [Web API and Frontend]()
+
+## Core Architecture
+
+Chainlink nodes are designed with modularity and extensibility in mind. The system follows a service-oriented architecture where various services work together, managed by a central application object.
+
+### High-Level Architecture Diagram
+
+Sources:
+
+* [core/services/chainlink/application.go157-187]()
+* [core/services/chainlink/application.go271-758]()
+* [core/services/job/spawner.go]()
+* [core/web/router.go48-103]()
+
+### Key Components Overview
+
+The Chainlink node architecture consists of several key components centered around the `chainlink.ChainlinkApplication` struct:
+
+1. **`chainlink.ChainlinkApplication`**: The central struct containing all services and providing the main application interface. Key fields include:
+
+   * `jobORM job.ORM`: Job persistence and queries
+   * `jobSpawner job.Spawner`: Job lifecycle management
+   * `pipelineRunner pipeline.Runner`: Task execution engine
+   * `relayers *CoreRelayerChainInteroperators`: Multi-chain abstraction
+   * `KeyStore keystore.Master`: Cryptographic key management
+2. **Job System**: Manages various oracle job types through a delegate pattern:
+
+   * `job.Spawner`: Creates and manages job services using health checkers
+   * `job.ORM`: Database operations for job specs and runs
+   * `job.Delegate` map: Type-specific implementations (OCR, VRF, DirectRequest, etc.)
+3. **Pipeline System**: Executes directed acyclic graphs (DAGs) of tasks:
+
+   * `pipeline.Runner`: Orchestrates pipeline execution with retries
+   * `pipeline.ORM`: Manages pipeline specs and run history
+   * Task types: HTTP, JSON parsing, multiplication, bridge calls
+4. **Chain Relayers**: Blockchain abstraction layer via `CoreRelayerChainInteroperators`:
+
+   * `evm.Relayer`: Ethereum and EVM-compatible chains
+   * `legacyevm.LegacyChainContainer`: Legacy EVM chain management
+   * Non-EVM relayers: Cosmos, Solana, StarkNet support
+5. **Web API**: Built on `gin.Engine` router with comprehensive endpoints:
+
+   * REST API: `/v2/*` routes for node management
+   * GraphQL: `/query` endpoint with schema-based queries
+   * Operator UI: Static assets and React frontend
+6. **Database Layer**: PostgreSQL accessed via `*sqlx.DB` with transaction support
+7. **Plugin System**: `plugins.LoopRegistry` for LOOPP (Chainlink Off-chain Plugin Protocol)
+
+Sources:
+
+* [core/services/chainlink/application.go157-187]()
+* [core/services/job/models.go57-138]()
+* [core/web/router.go48-103]()
+* [core/services/job/spawner.go]()
+
+## Initialization and Startup Flow
+
+The application initialization follows a specific startup sequence centered around the `chainlink.NewApplication()` function.
+
+### Application Startup Sequence
+
+### Bootstrap Process Details
+
+The `chainlink.NewApplication()` function coordinates initialization of all core components:
+
+1. **Configuration Setup**: Parse TOML configs, secrets, and environment variables via `chainlink.GeneralConfigOpts`
+2. **Database Connection**: Establish `*sqlx.DB` connection to PostgreSQL using `pg.NewConnection()`
+3. **Keystore Initialization**: Create `keystore.Master` with support for multiple key types (ETH, OCR, P2P, VRF, etc.)
+4. **Relayer Factory Setup**: Initialize `RelayerFactory` and create `CoreRelayerChainInteroperators` for multi-chain support
+5. **Job Delegate Registration**: Create `job.Delegate` map with implementations:
+
+   * `directrequest.NewDelegate()`
+   * `ocr.NewDelegate()` / `ocr2.NewDelegate()`
+   * `vrf.NewDelegate()`
+   * `keeper.NewDelegate()`
+   * `webhook.NewDelegate()`
+6. **Core Services Assembly**: Initialize key services in dependency order:
+
+   * `pipeline.NewORM()` and `pipeline.NewRunner()`
+   * `job.NewORM()` and `job.NewSpawner()`
+   * `bridges.NewORM()` for external adapter management
+7. **Web Server Setup**: Create `gin.Engine` router with middleware and route handlers via `web.Router()`
+8. **Service Registration**: Add all services to `srvcs []services.ServiceCtx` for lifecycle management
+
+The modular design allows services to implement the `services.ServiceCtx` interface for consistent start/stop behavior.
+
+Sources:
+
+* [core/cmd/app.go35-349]()
+* [core/services/chainlink/application.go272-758]()
+* [core/services/chainlink/application.go469-495]()
+
+## Job Execution Flow
+
+The job execution system processes various oracle job types through a delegate pattern with pipeline execution.
+
+### Job Execution Architecture
+
+### Job Execution Lifecycle
+
+1. **Job Registration**: Jobs are stored in the database via `job.ORM.CreateJob()` with type-specific specs (OCR, VRF, DirectRequest, etc.)
+2. **Service Creation**: `job.Spawner.CreateJob()` uses the delegate pattern:
+
+   * Looks up `job.Delegate` for the job type from the delegate map
+   * Calls `delegate.ServicesForSpec()` to create job-specific services
+   * Registers services with the health checker
+3. **Job Triggers**: Various mechanisms can trigger job execution:
+
+   * Blockchain events via `LogBroadcaster` subscriptions
+   * HTTP webhooks to `/v2/jobs/:ID/runs` endpoint
+   * Time-based triggers using `cron.Schedule`
+   * External initiators via `webhook.ExternalInitiatorManager`
+4. **Pipeline Processing**: Many jobs execute pipelines through `pipeline.Runner`:
+
+   * Parse DOT notation into `pipeline.TaskDAG`
+   * Execute tasks in dependency order (HTTP, JSON parse, multiply, etc.)
+   * Handle retries and error conditions
+   * Store results via `pipeline.ORM`
+5. **Chain Interaction**: Results often trigger blockchain transactions:
+
+   * Get appropriate relayer via `relayer.Get(chainID)`
+   * Submit transactions through `txmgr.TxManager`
+   * Use keys from `keystore.Eth()` for signing
+   * Monitor confirmation via `evmclient.Client`
+
+Sources:
+
+* [core/services/job/spawner.go]()
+* [core/services/job/models.go57-139]()
+* [core/services/job/orm.go44-86]()
+* [core/services/chainlink/application.go499-685]()
+
+### Job Lifecycle
+
+1. **Trigger**: Jobs start execution through various triggers:
+
+   * Blockchain events (logs, new blocks)
+   * HTTP webhooks
+   * Time-based cron schedules
+   * External initiators
+2. **Job Spawning**: The `JobSpawner` manages the lifecycle of job services:
+
+   * Creates and starts services for each job
+   * Handles job deletion and cleanup
+   * Manages active job registry
+3. **Delegation**: Each job type has a specific delegate that knows how to:
+
+   * Create appropriate services for the job
+   * Process the job's pipeline
+   * Handle job-specific lifecycle events
+4. **Pipeline Execution**: The job's pipeline is executed by the pipeline runner:
+
+   * Processes a directed acyclic graph (DAG) of tasks
+   * Handles retries and error states
+   * Validates inputs and outputs
+5. **Blockchain Interaction**: Many jobs culminate in blockchain transactions:
+
+   * Transaction management
+   * Gas price estimation
+   * Key selection and signing
+
+Sources:
+
+* [core/services/job/spawner.go19-46]()
+* [core/services/job/models.go57-137]()
+* [core/services/job/runner\_integration\_test.go179-217]()
+
+## Data Persistence
+
+Chainlink uses PostgreSQL accessed via `*sqlx.DB` with comprehensive ORM abstractions for job management and pipeline execution.
+
+### Database Schema Overview
+
+### ORM Layer Architecture
+
+The data persistence layer uses specialized ORM interfaces for different domains:
+
+| Component | Interface/Struct | Purpose |
+| --- | --- | --- |
+| Job Management | `job.ORM` | CRUD operations for jobs and specs |
+| Pipeline Execution | `pipeline.ORM` | Pipeline runs and task execution history |
+| Bridge Management | `bridges.ORM` | External adapter configurations |
+| Key Storage | `keystore.Master` | Cryptographic key persistence |
+| Chain Configuration | `evmtypes.Configs` | Chain-specific settings |
+
+### Key ORM Operations
+
+1. **Job Persistence**: The `job.ORM` interface provides:
+
+   * `CreateJob(ctx, *Job)`: Insert job with type-specific spec
+   * `FindJob(ctx, id)`: Retrieve job with eager-loaded specs
+   * `DeleteJob(ctx, id, jobType)`: Remove job and cleanup
+   * `RecordError(ctx, jobID, description)`: Track job errors
+2. **Pipeline Execution Tracking**: The `pipeline.ORM` handles:
+
+   * Pipeline run state transitions (`pipeline.RunStatus`)
+   * Task execution results and error logging
+   * Retention policies for run history
+3. **Database Connections**: All ORMs share the same `*sqlx.DB` instance:
+
+   * Connection pooling and timeout management
+   * Transaction support for atomic operations
+   * Migration handling via `migrate.Migrate()`
+
+Sources:
+
+* [core/services/job/orm.go44-86]()
+* [core/services/job/models.go141-249]()
+* [core/store/store.go98-104]()
+* [core/services/chainlink/application.go469-477]()
+
+### Database Schema
+
+Chainlink uses an ORM layer to interact with the PostgreSQL database. Key models include:
+
+1. **Jobs**: Central table storing all job types
+
+   * External ID, type, status, etc.
+   * Links to specialized spec tables
+2. **Pipeline Specs**: Define task DAGs for execution
+
+   * Dot DAG source (pipeline definition)
+   * Links to pipeline runs
+3. **Pipeline Runs**: Record of pipeline executions
+
+   * State (running, completed, errored)
+   * Outputs and errors
+   * Task runs
+4. **Job Specific Specs**: Specialized tables for different job types
+
+   * OCR/OCR2 specs
+   * DirectRequest specs
+   * Keeper specs
+   * VRF specs
+   * And others
+
+Database migrations are handled automatically as part of the application startup process.
+
+Sources:
+
+* [core/services/job/models.go141-249]()
+* [core/services/job/orm.go46-90]()
+* [core/store/store.go86-147]()
+
+## Web API and Server
+
+Chainlink provides a comprehensive web server built on `gin.Engine` that hosts the Operator UI and extensive API endpoints.
+
+### Web Server Architecture
+
+### Web Server Components
+
+The web server is structured around the `web.NewRouter()` function which returns a configured `gin.Engine`:
+
+1. **Router Setup**: `gin.Engine` with comprehensive middleware:
+
+   * `otelgin.Middleware()` for OpenTelemetry tracing
+   * `limits.RequestSizeLimiter()` for request size limits
+   * `cors` middleware for cross-origin requests
+   * `secureMiddleware()` for TLS and security headers
+2. **Route Organization**:
+
+   * `/v2/*` routes: Primary REST API endpoints
+   * `/query`: GraphQL endpoint for flexible querying
+   * `/health`, `/readyz`: Health check endpoints
+   * `/debug/*`: Debug and profiling endpoints (when enabled)
+   * Static assets: Operator UI files
+3. **API Controllers** (all struct types with embedded `chainlink.Application`):
+
+   * `JobsController`: Job CRUD operations (`/v2/jobs`)
+   * `ChainsController`: Multi-chain configuration (`/v2/chains`)
+   * `NodesController`: Node management (`/v2/nodes`)
+   * Various key controllers: ETH, OCR, VRF, P2P key management
+   * `ConfigController`: Node configuration display (`/v2/config`)
+4. **Authentication System**:
+
+   * `sessions.AuthenticationProvider` interface for pluggable auth
+   * Session-based auth for UI
+   * Token-based auth for API clients
+   * External initiator authentication for webhook triggers
+5. **GraphQL Interface**:
+
+   * Schema defined in `core/web/schema/`
+   * `resolver.Resolver` provides data access
+   * Supports introspection and flexible querying
+
+### Key Endpoint Examples
+
+| Method | Path | Controller | Purpose |
+| --- | --- | --- | --- |
+| GET | `/v2/jobs` | `JobsController.Index` | List all jobs |
+| POST | `/v2/jobs` | `JobsController.Create` | Create new job |
+| GET | `/v2/chains` | `ChainsController.Index` | List chain configurations |
+| POST | `/v2/keys/eth` | `ETHKeysController.Create` | Generate new ETH key |
+| POST | `/query` | GraphQL handler | Execute GraphQL queries |
+| GET | `/health` | `HealthController.Health` | Node health status |
+
+Sources:
+
+* [core/web/router.go48-103]()
+* [core/web/router.go233-433]()
+* [core/web/jobs\_controller.go16-45]()
+* [core/web/resolver/spec.go1-10]()
+
+### Web Server Components
+
+The web server is built using the Gin framework and includes:
+
+1. **Router**: Central handler for HTTP requests
+2. **Middleware**: Processing layers for all requests:
+
+   * CORS handling
+   * Rate limiting
+   * Authentication
+   * CSRF protection
+   * Request size limiting
+   * Logging
+3. **API Endpoints**: Numerous RESTful endpoints for node control:
+
+   * `/v2/jobs`: Job management
+   * `/v2/chains`: Chain configuration
+   * `/v2/nodes`: Node management
+   * `/v2/keys`: Key management
+   * `/v2/config`: Configuration
+   * Health and debug endpoints
+4. **GraphQL API**: Flexible data query interface at `/query`
+5. **Operator UI**: Web interface for node management
+
+Sources:
+
+* [core/web/router.go47-103]()
+* [core/web/router.go233-432]()
+* [core/web/schema/type/spec.graphql1-12]()
+
+## Plugin System and Chain Relayers
+
+Chainlink supports extensibility through the LOOPP (Chainlink Off-chain Plugin Protocol) and multi-chain relayers.
+
+### Plugin and Relayer Architecture
+
+### Core Components
+
+1. **LOOPP Plugin System**:
+
+   * `plugins.LoopRegistry`: Manages plugin lifecycle and GRPC connections
+   * `plugins.RegistrarConfig`: Configuration for plugin registration and lifecycle
+   * Support for external OCR2 plugins via GRPC
+2. **Multi-Chain Relayer System**:
+
+   * `RelayerFactory`: Creates chain-specific relayers based on configuration
+   * `CoreRelayerChainInteroperators`: Coordinates between different chain types
+   * Chain initialization functions: `InitEVM()`, `InitCosmos()`, etc.
+3. **EVM Chain Integration** (Primary chain support):
+
+   * `legacyevm.LegacyChainContainer`: Manages multiple EVM chain instances
+   * `HeadBroadcaster`: Tracks latest blocks across chains
+   * `LogBroadcaster`: Filters and distributes blockchain events
+   * `txmgr.TxManager`: Handles transaction submission and confirmation
+   * `logpoller.LogPoller`: Efficient log polling and storage
+4. **Chain Configuration**:
+
+   * `EVMFactoryConfig`: EVM-specific configuration with keystore integration
+   * `legacyevm.ChainOpts`: Chain options including database and feature configs
+   * Chain-specific settings: RPC URLs, gas configurations, confirmation depths
+5. **Relayer Interface**: All relayers implement `loop.Relayer` for:
+
+   * Provider creation for job types (OCR, CCIP, etc.)
+   * Chain-agnostic service interfaces
+   * Configuration management
+
+### Supported Chains
+
+| Chain Type | Relayer Function | Key Features |
+| --- | --- | --- |
+| EVM | `InitEVM()` | Full featured: OCR, VRF, Automation, CCIP |
+| Cosmos | `InitCosmos()` | IBC support, staking operations |
+| Solana | `InitSolana()` | Program interactions, account management |
+| StarkNet | `InitStarknet()` | Cairo contract support, L2 scaling |
+| Aptos | `InitAptos()` | Move language support |
+
+Sources:
+
+* [core/services/chainlink/application.go300-356]()
+* [core/services/chainlink/application.go431-437]()
+* [core/services/relay/evm/evm.go142-160]()
+* [core/services/relay/evm/evm.go199-206]()
+
+### Chain Integration Architecture
+
+The chain integration system uses a relayer pattern to abstract blockchain interactions:
+
+1. **Relayer Factory**: Creates relayers for different chain types
+2. **Relayer Chain Interoperators**: Coordinates between different relayers:
+
+   * Registration and lifecycle management
+   * Cross-chain interactions
+   * Chain-specific service management
+3. **Chain-Specific Relayers**:
+
+   * EVM Relayer (Ethereum, Polygon, etc.)
+   * Cosmos Relayer
+   * Solana Relayer
+   * StarkNet Relayer
+4. **Chain Services**:
+
+   * Head Tracker: Follows blockchain head
+   * Log Broadcaster: Processes and filters blockchain logs
+   * Transaction Manager: Handles transaction submission and confirmation
+   * Gas Estimator: Determines optimal gas prices
+5. **LOOPP (Chainlink Off-Chain Plugin Protocol)**:
+
+   * Plugin registry for extensibility
+   * Standardized plugin interfaces
+   * Configuration management
+
+Sources:
+
+* [core/services/chainlink/application.go298-350]()
+* [core/services/chainlink/application.go422-486]()
+
+## Configuration System
+
+Chainlink uses a layered configuration system that supports multiple sources with override capabilities.
+
+Sources:
+
+* [core/cmd/app.go39-133]()
+* [core/services/chainlink/application.go188-210]()
+
+### Configuration System Features
+
+Chainlink's configuration system provides:
+
+1. **Multi-Source Configuration**:
+
+   * TOML files for structured configuration
+   * Environment variables for operational settings
+   * Secrets management for sensitive data
+   * Command line flags for runtime options
+   * Database-stored configurations
+2. **Hierarchical Override System**:
+
+   * Later sources override earlier ones
+   * Multiple TOML files can be specified with cascading priority
+   * Environment variables have highest precedence
+3. **Chain-Specific Configuration**:
+
+   * Each supported blockchain can have custom settings
+   * Chain IDs used as configuration namespaces
+   * Chain-specific options (RPC URLs, gas settings, etc.)
+4. **Validation and Defaults**:
+
+   * Comprehensive validation of configured values
+   * Sensible defaults for most settings
+   * Required settings clearly indicated
+
+The configuration system ensures nodes can be flexibly deployed in various environments while maintaining security and operational efficiency.
+
+Sources:
+
+* [core/cmd/app.go39-133]()
+* [core/store/store.go86-147]()
+
+## Testing Infrastructure
+
+Chainlink has an extensive testing infrastructure to ensure reliability:
+
+Sources:
+
+* [core/internal/cltest/cltest.go204-487]()
+* [core/internal/cltest/factories.go53-555]()
+* [core/internal/cltest/mocks.go35-789]()
+
+### Test Infrastructure Components
+
+The testing infrastructure includes:
+
+1. **Test Application Factory**: Creates isolated test Chainlink applications
+
+   * Mock services and dependencies
+   * In-memory databases
+   * Controlled test environment
+2. **Mock Objects**: Mock implementations of interfaces:
+
+   * Mock ETH client
+   * Mock subscription services
+   * Mock renderers and prompts
+3. **Test Fixtures**: Pre-defined test data:
+
+   * Job specs
+   * Bridge definitions
+   * Key configurations
+4. **Test Utilities**: Helper functions for common test operations:
+
+   * Creating jobs
+   * Setting up bridges
+   * Inserting keys
+5. **Testing Database**: Specialized handling for database tests:
+
+   * Transaction-wrapped tests
+   * Isolated test databases
+   * Automated cleanup
+
+This comprehensive testing infrastructure helps ensure the Chainlink node's reliability and correctness.
+
+Sources:
+
+* [core/internal/cltest/cltest.go204-487]()
+* [core/internal/cltest/factories.go53-555]()
+* [core/internal/cltest/mocks.go35-789]()
+
+## Summary
+
+The Chainlink node architecture employs a modular, service-oriented design with several key components:
+
+1. **Core Application**: Central orchestrator managing all services
+2. **Job System**: Flexible job management for various oracle functions
+3. **Pipeline System**: Task execution engine for job processing
+4. **Chain Integration**: Abstracted blockchain interactions via relayers
+5. **Web Server**: API and UI interfaces for node operation
+6. **Configuration System**: Flexible, multi-source configuration
+7. **Plugin System**: Extensibility through standardized plugins
+8. **Testing Infrastructure**: Comprehensive test framework
+
+This architecture enables Chainlink to support multiple blockchains, job types, and oracle patterns while maintaining modularity, extensibility, and reliability.
+
+Sources:
+
+* [core/services/chainlink/application.go153-187]()
+* [core/services/chainlink/application.go271-749]()
+* [core/services/job/spawner.go19-46]()
+* [core/web/router.go47-103]()
+
+Dismiss
+
+Refresh this wiki
+
+Enter email to refresh
+
+### On this page
+
+* [System Architecture]()
+* [Core Architecture]()
+* [High-Level Architecture Diagram]()
+* [Key Components Overview]()
+* [Initialization and Startup Flow]()
+* [Application Startup Sequence]()
+* [Bootstrap Process Details]()
+* [Job Execution Flow]()
+* [Job Execution Architecture]()
+* [Job Execution Lifecycle]()
+* [Job Lifecycle]()
+* [Data Persistence]()
+* [Database Schema Overview]()
+* [ORM Layer Architecture]()
+* [Key ORM Operations]()
+* [Database Schema]()
+* [Web API and Server]()
+* [Web Server Architecture]()
+* [Web Server Components]()
+* [Key Endpoint Examples]()
+* [Web Server Components]()
+* [Plugin System and Chain Relayers]()
+* [Plugin and Relayer Architecture]()
+* [Core Components]()
+* [Supported Chains]()
+* [Chain Integration Architecture]()
+* [Configuration System]()
+* [Configuration System Features]()
+* [Testing Infrastructure]()
+* [Test Infrastructure Components]()
+* [Summary]()

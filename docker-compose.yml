@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nyc-code-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      - TOKEN_DIR=/app/token-data
+      - GOOGLE_CREDENTIALS_PATH=/app/client_secret_720052609656-btvogmsj00bk0e6eulc6ec412glnlr2i.apps.googleusercontent.com.json
+    volumes:
+      # Mount credentials and token as volumes so they persist
+      - ./backend/client_secret_720052609656-btvogmsj00bk0e6eulc6ec412glnlr2i.apps.googleusercontent.com.json:/app/client_secret_720052609656-btvogmsj00bk0e6eulc6ec412glnlr2i.apps.googleusercontent.com.json:ro
+      - token-data:/app/token-data
+      - ./backend/data:/app/data
+      - ./backend/output:/app/output
+      - ./backend/.env:/app/.env:ro
+    restart: unless-stopped
+    networks:
+      - nyc-code-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nyc-code-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - nyc-code-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  nyc-code-network:
+    driver: bridge
+
+volumes:
+  token-data:
+    driver: local

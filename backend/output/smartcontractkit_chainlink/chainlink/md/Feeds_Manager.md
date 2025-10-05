@@ -1,0 +1,227 @@
+* [core/services/feeds/rpc\_handlers\_test.go]()
+* [core/services/feeds/service.go]()
+* [core/services/feeds/service\_test.go]()
+* [core/web/resolver/feeds\_manager\_chain\_config.go]()
+* [core/web/resolver/feeds\_manager\_chain\_config\_test.go]()
+* [core/web/resolver/plugins.go]()
+
+The Feeds Manager is a core subsystem in Chainlink that facilitates the interaction between Chainlink nodes and external Feeds Manager Services (FMS). It provides mechanisms to register external feeds services, manage blockchain configurations, and handle job proposals that come from these services. The Feeds Manager acts as a bridge between external data providers and the Chainlink node's job execution pipeline.
+
+For information about job execution and pipelines, see [Job System]() and [Pipeline System]().
+
+## Overview
+
+Sources: [core/services/feeds/service.go90-128]() [core/services/feeds/service.go161-212]()
+
+The Feeds Manager system enables Chainlink nodes to:
+
+1. Register and maintain connections with external Feeds Manager Services
+2. Configure chain-specific settings for feeds
+3. Receive, review, and process job proposals from feeds managers
+4. Track and manage the lifecycle of feed-related jobs
+
+## Key Components
+
+### Service
+
+The `feeds.Service` is the central component of the Feeds Manager system, coordinating all interactions between external feeds managers and the Chainlink node. It implements the core business logic for managing feeds, including:
+
+* Registration and management of external feeds managers
+* Configuration of chain-specific settings
+* Processing of job proposals
+* Synchronization of node information
+
+Sources: [core/services/feeds/service.go90-128]()
+
+### ORM (Object-Relational Mapping)
+
+The `feeds.ORM` provides persistence operations for the feeds subsystem, managing database interactions for:
+
+* Feeds managers
+* Chain configurations
+* Job proposals
+* Job specs
+
+Sources: [core/services/feeds/orm.go18-62]()
+
+### ConnectionsManager
+
+The ConnectionsManager handles the establishment and maintenance of connections to external feeds manager services. It manages the RPC clients used to communicate with these services.
+
+### RPCHandlers
+
+The RPCHandlers component exposes endpoints that external feeds manager services can call to propose, delete, or revoke jobs on the Chainlink node.
+
+Sources: [core/services/feeds/rpc\_handlers.go11-79]()
+
+## Data Model
+
+The Feeds Manager system uses several key data models to represent its components:
+
+Sources: [core/services/feeds/models.go115-298]()
+
+### FeedsManager
+
+Represents an external feeds manager service that can propose jobs to the node. Key attributes include:
+
+* **URI**: The endpoint to connect to
+* **PublicKey**: Used for authentication
+* **IsConnectionActive**: Current connection status
+
+### ChainConfig
+
+Contains configuration for chains that a feeds manager interacts with, including:
+
+* **ChainID/ChainType**: Identifies the blockchain
+* **AccountAddress/AdminAddress**: Addresses for transactions
+* Type-specific configurations (FluxMonitor, OCR1, OCR2)
+
+### JobProposal
+
+Represents a job proposed by a feeds manager with these key fields:
+
+* **RemoteUUID**: Unique identifier from the feeds manager
+* **Status**: Current status (pending, approved, rejected, etc.)
+* **ExternalJobID**: ID of the job if approved and created
+
+### JobProposalSpec
+
+A versioned specification for a job proposal:
+
+* **Definition**: The actual job specification (in TOML format)
+* **Status**: Current status (pending, approved, rejected, etc.)
+* **Version**: Version number of the specification
+
+## Key Workflows
+
+### Registering a Feeds Manager
+
+Sources: [core/services/feeds/service.go223-273]()
+
+### Job Proposal Lifecycle
+
+#### Proposing a Job
+
+When an external feeds manager proposes a job:
+
+1. The feeds manager sends a `ProposeJob` RPC to the node
+2. The service creates or updates a job proposal record
+3. For workflow specs, auto-approval is performed
+4. For other job types, the proposal awaits manual approval
+
+Sources: [core/services/feeds/service.go658-770]()
+
+#### Approving a Job Spec
+
+When a node operator approves a job proposal:
+
+1. The service validates the proposal status
+2. Checks for existing jobs that might conflict
+3. Creates the job in the node's job system
+4. Updates the proposal status to approved
+
+Sources: [core/services/feeds/service.go842-1045]()
+
+### Synchronizing Node Information
+
+The Feeds Manager system regularly synchronizes node information with the external feeds manager service:
+
+Sources: [core/services/feeds/service.go277-355]()
+
+## Service Interface
+
+The Feeds Manager service provides a comprehensive interface for interacting with feeds managers:
+
+Sources: [core/services/feeds/service.go90-128]()
+
+## WebUI Integration
+
+The Feeds Manager system exposes functionality through GraphQL resolvers in the Chainlink web UI, allowing operators to:
+
+1. View and manage feeds managers
+2. Configure chain settings
+3. Review and process job proposals
+
+Sources: [core/web/resolver/feeds\_manager.go1-107]() [core/web/schema/type/feeds\_manager.graphql1-205]()
+
+## Configuration
+
+The Feeds Manager system has several configuration aspects:
+
+1. **Feature Flags**: Controls whether multiple feeds managers are supported
+2. **Connection Settings**: Controls retry logic for connection management
+3. **Chain-specific Settings**: Controls settings for specific blockchain interactions
+
+### Chain Configuration Types
+
+The system supports various blockchain types, each with specific configuration requirements:
+
+| Chain Type | Description | Supported Job Types |
+| --- | --- | --- |
+| EVM | Ethereum Virtual Machine-based chains | FluxMonitor, OCR1, OCR2 |
+| Solana | Solana blockchain | OCR2 |
+| Starknet | StarkNet L2 solution | OCR2 |
+| Aptos | Aptos blockchain | OCR2 |
+| Tron | Tron blockchain | OCR2 |
+
+Sources: [core/services/feeds/models.go78-113]()
+
+## Error Handling
+
+The Feeds Manager implements comprehensive error handling for various scenarios:
+
+| Error | Description |
+| --- | --- |
+| ErrOCR2Disabled | OCR2 functionality is disabled on the node |
+| ErrOCRDisabled | OCR functionality is disabled on the node |
+| ErrSingleFeedsManager | Only a single feeds manager is supported (when flag is off) |
+| ErrDuplicateFeedsManager | Manager already registered with same public key |
+| ErrJobAlreadyExists | Job for contract address already exists |
+| ErrFeedsManagerDisabled | Feeds manager functionality is disabled |
+
+Sources: [core/services/feeds/service.go48-55]()
+
+## Metrics and Monitoring
+
+The system includes Prometheus metrics to track:
+
+1. Job proposal requests
+2. Workflow requests, approvals, and rejections
+3. Job proposal counts by status (pending, approved, rejected, etc.)
+
+This allows operators to monitor the health and activity of the feeds manager system.
+
+Sources: [core/services/feeds/service.go57-83]()
+
+Dismiss
+
+Refresh this wiki
+
+Enter email to refresh
+
+### On this page
+
+* [Feeds Manager]()
+* [Overview]()
+* [Key Components]()
+* [Service]()
+* [ORM (Object-Relational Mapping)]()
+* [ConnectionsManager]()
+* [RPCHandlers]()
+* [Data Model]()
+* [FeedsManager]()
+* [ChainConfig]()
+* [JobProposal]()
+* [JobProposalSpec]()
+* [Key Workflows]()
+* [Registering a Feeds Manager]()
+* [Job Proposal Lifecycle]()
+* [Proposing a Job]()
+* [Approving a Job Spec]()
+* [Synchronizing Node Information]()
+* [Service Interface]()
+* [WebUI Integration]()
+* [Configuration]()
+* [Chain Configuration Types]()
+* [Error Handling]()
+* [Metrics and Monitoring]()

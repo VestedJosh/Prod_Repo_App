@@ -1,0 +1,192 @@
+This document covers the build and deployment infrastructure for the Chainlink node, including the Make-based build orchestration, Docker containerization, plugin management, code generation tools, and deployment processes. For information about CI/CD pipelines and automated testing, see [CI/CD Pipeline](). For development tools and testing frameworks, see [Testing Framework]().
+
+## Overview
+
+The Chainlink node uses a comprehensive build system centered around a GNU Makefile that orchestrates compilation, containerization, plugin management, and deployment processes. The system supports multiple build targets, multi-stage Docker builds, and a sophisticated plugin architecture using the LOOP (Local Out-Of-Process) system.
+
+Sources: [GNUmakefile1-254]() [core/chainlink.Dockerfile1-103]() [plugins/chainlink.Dockerfile1-103]()
+
+## Make-based Build Orchestration
+
+The build system is orchestrated through a comprehensive GNU Makefile that provides over 30 build targets for different development and deployment scenarios.
+
+### Core Build Targets
+
+The main build process follows this flow:
+
+1. **Dependency Management**: The `gomod` target ensures Go dependencies are downloaded [GNUmakefile24-28]()
+2. **Binary Compilation**: The `chainlink` target builds the main executable with version info from `package.json` [GNUmakefile52-54]()
+3. **Plugin Installation**: Various plugin targets install LOOP plugins from different sources [GNUmakefile68-88]()
+
+### Build Configuration
+
+Build behavior is controlled through several variables:
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `COMMIT_SHA` | Git commit for build metadata | `git rev-parse HEAD` |
+| `VERSION` | Version from package.json | `jq -r '.version' package.json` |
+| `GO_LDFLAGS` | Linker flags from tools/bin/ldflags | Generated |
+| `CL_INSTALL_PRIVATE_PLUGINS` | Enable private plugin installation | `false` |
+| `CL_LOOPINSTALL_OUTPUT_DIR` | Plugin manifest output directory | Unset |
+
+Sources: [GNUmakefile3-11]() [GNUmakefile45-50]()
+
+## Docker Containerization System
+
+The system provides multiple Docker images for different deployment scenarios, each optimized for specific use cases.
+
+### Main Chainlink Container
+
+The primary container image is built using a multi-stage process:
+
+Key features of the main container:
+
+* **Multi-stage build** minimizes final image size [core/chainlink.Dockerfile2-4]()
+* **Go coverage support** via `GO_COVER_FLAG` build argument [core/chainlink.Dockerfile17-30]()
+* **Built-in plugins** includes feeds and Solana plugins [core/chainlink.Dockerfile70-76]()
+* **PostgreSQL tools** for database operations [core/chainlink.Dockerfile63-66]()
+* **CCIP configuration** support [core/chainlink.Dockerfile78-81]()
+
+### Plugin-Enhanced Container
+
+The plugins container provides comprehensive plugin support with debugging capabilities:
+
+The plugin container supports:
+
+* **Private plugin authentication** via GitHub token [plugins/chainlink.Dockerfile31-40]()
+* **Debugging support** with Delve debugger [plugins/chainlink.Dockerfile19-21]() [plugins/chainlink.Dockerfile73]()
+* **Environment configuration** for plugin commands [plugins/chainlink.Dockerfile76-81]()
+* **Shared library support** for complex plugins [plugins/chainlink.Dockerfile42-47]()
+
+Sources: [core/chainlink.Dockerfile1-103]() [plugins/chainlink.Dockerfile1-103]()
+
+## Plugin Management System
+
+The Chainlink node uses the LOOP (Local Out-Of-Process) architecture for plugins, managed through the `loopinstall` tool and plugin manifest files.
+
+### Plugin Installation Flow
+
+### Plugin Installation Targets
+
+The Makefile provides three plugin installation strategies:
+
+1. **Local Plugins** [GNUmakefile84-88]():
+
+   ```
+   go install $(GOFLAGS) ./plugins/cmd/chainlink-medianpoc
+   go install $(GOFLAGS) ./plugins/cmd/chainlink-ocr3-capability
+   go install $(GOFLAGS) ./plugins/cmd/capabilities/log-event-trigger
+   ```
+2. **Public Plugins** [GNUmakefile68-74]():
+
+   * Uses `loopinstall` with `plugins.public.yaml`
+   * Supports concurrent installation (`--concurrency 5`)
+   * Optional artifact output for CI/CD
+3. **Private Plugins** [GNUmakefile76-82]():
+
+   * Requires `GOPRIVATE=github.com/smartcontractkit/*`
+   * Needs GitHub authentication
+   * Controlled by `CL_INSTALL_PRIVATE_PLUGINS` flag
+
+Sources: [GNUmakefile64-88]() [plugins/chainlink.Dockerfile24-40]()
+
+## Code Generation and Tools
+
+The build system includes comprehensive code generation capabilities for maintaining type safety and reducing boilerplate.
+
+### Generation Tools and Targets
+
+### Code Generation Process
+
+The main generation workflow [GNUmakefile126-130]():
+
+1. **Tool Installation**: Ensures all generation tools are available
+2. **Path Setup**: Updates PATH to use locally installed protoc
+3. **Module Processing**: Uses `gomods` to run generation across all modules
+4. **Mock Generation**: Executes mockery for all `.mockery.yaml` files
+
+Key generation commands:
+
+* **General generation**: `gomods -w go generate -x ./...` [GNUmakefile129]()
+* **Telemetry protobuf**: `protoc --go_out=. --go-wsrpc_out=. ./core/services/synchronization/telem/*.proto` [GNUmakefile192-197]()
+* **Config documentation**: `go run ./core/config/docs/cmd/generate -o ./docs/` [GNUmakefile201]()
+
+Sources: [GNUmakefile126-201]() [GNUmakefile176-188]()
+
+## Development and Testing Support
+
+The build system provides extensive support for development workflows and testing scenarios.
+
+### Development Targets
+
+| Target | Purpose | Key Features |
+| --- | --- | --- |
+| `chainlink-dev` | Development build | Uses `-tags dev` [GNUmakefile56-58]() |
+| `testscripts` | Integration testing | Uses testscript framework [GNUmakefile136-140]() |
+| `testdb` | Test database setup | Prepares PostgreSQL test DB [GNUmakefile154-164]() |
+| `docs` | Documentation server | Runs pkgsite on port 8080 [GNUmakefile38-42]() |
+
+### Testing Infrastructure
+
+The testing system supports:
+
+* **Containerized databases** via Docker PostgreSQL [GNUmakefile147-148]()
+* **Script-based testing** using the testscript framework [GNUmakefile136-144]()
+* **Database migration testing** with force cleanup capabilities [GNUmakefile158-160]()
+
+Sources: [GNUmakefile136-164]() [tools/bin/lint1-8]()
+
+## Build Artifacts and Deployment
+
+The build system produces various artifacts for different deployment scenarios, with comprehensive metadata and versioning support.
+
+### Artifact Types
+
+The build process generates several categories of artifacts:
+
+1. **Binaries**: Main `chainlink` executable and plugin binaries
+2. **Container Images**: Docker images for different deployment scenarios
+3. **Documentation**: Generated configuration docs and Go package documentation
+4. **Test Artifacts**: Test databases and script validation results
+
+### Version Management
+
+Version information is centrally managed through `package.json` and propagated throughout the build:
+
+* **Version extraction**: `VERSION = $(shell jq -r '.version' package.json)` [GNUmakefile4]()
+* **Git metadata**: `COMMIT_SHA ?= $(shell git rev-parse HEAD)` [GNUmakefile3]()
+* **Linker flags**: Generated by `tools/bin/ldflags` [GNUmakefile5]()
+
+The build system ensures all artifacts include proper version metadata for traceability and debugging purposes.
+
+Sources: [GNUmakefile3-6]() [pnpm-lock.yaml1-870]()
+
+Dismiss
+
+Refresh this wiki
+
+Enter email to refresh
+
+### On this page
+
+* [Build and Deployment System]()
+* [Overview]()
+* [Make-based Build Orchestration]()
+* [Core Build Targets]()
+* [Build Configuration]()
+* [Docker Containerization System]()
+* [Main Chainlink Container]()
+* [Plugin-Enhanced Container]()
+* [Plugin Management System]()
+* [Plugin Installation Flow]()
+* [Plugin Installation Targets]()
+* [Code Generation and Tools]()
+* [Generation Tools and Targets]()
+* [Code Generation Process]()
+* [Development and Testing Support]()
+* [Development Targets]()
+* [Testing Infrastructure]()
+* [Build Artifacts and Deployment]()
+* [Artifact Types]()
+* [Version Management]()

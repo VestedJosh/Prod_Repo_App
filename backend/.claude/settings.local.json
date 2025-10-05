@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Read(//c/Users/jgott/OneDrive/Desktop/NYC_Code/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
