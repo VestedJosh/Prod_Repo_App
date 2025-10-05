@@ -10,7 +10,19 @@ import queue
 import time
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS to allow Vercel frontend
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",  # Local development
+            "https://*.vercel.app",    # Vercel preview deployments
+            "https://your-domain.com"  # Your custom domain (if you have one)
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Ensure directories exist
 os.makedirs('data', exist_ok=True)
@@ -68,6 +80,9 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
     """
     Process a single repository (called by queue worker)
     """
+    md_folder_path = None
+    repo_folder_path = None
+
     try:
         print(f"[Queue Worker] Starting documentation generation for: {github_url}")
         processing_status[github_url]['status'] = 'scraping'
@@ -80,6 +95,11 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
 
         # Upload folder structure with markdown files
         md_folder_path = result.get('md_folder_path', '')
+        repo_folder = result.get('repo_folder', '')
+
+        # Store the full repo folder path for cleanup
+        if repo_folder:
+            repo_folder_path = os.path.join('output', repo_folder)
 
         if md_folder_path and os.path.exists(md_folder_path):
             # Get list of .md files
@@ -107,6 +127,15 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
         processing_status[github_url]['status'] = 'completed'
         print(f"[Queue Worker] Processing completed for: {github_url}")
 
+        # Clean up: Delete markdown files and folder after successful upload
+        print(f"[Queue Worker] Cleaning up local files...")
+        if repo_folder_path and os.path.exists(repo_folder_path):
+            import shutil
+            shutil.rmtree(repo_folder_path)
+            print(f"[Queue Worker] Deleted folder: {repo_folder_path}")
+        else:
+            print(f"[Queue Worker] No cleanup needed - folder not found")
+
     except Exception as e:
         print(f"[Queue Worker] Error: {str(e)}")
         processing_status[github_url]['status'] = 'failed'
@@ -117,6 +146,15 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
             update_sheet_status(sheet_id, row_number, 'Failed')
         except:
             pass
+
+        # Clean up even on failure to avoid cluttering disk
+        try:
+            if repo_folder_path and os.path.exists(repo_folder_path):
+                import shutil
+                shutil.rmtree(repo_folder_path)
+                print(f"[Queue Worker] Cleaned up failed processing folder: {repo_folder_path}")
+        except Exception as cleanup_error:
+            print(f"[Queue Worker] Cleanup failed: {str(cleanup_error)}")
 
 def queue_worker():
     """
