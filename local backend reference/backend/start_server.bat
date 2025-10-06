@@ -1,0 +1,3 @@
+@echo off
+echo Starting NYC Code Backend Server...
+python app.py
