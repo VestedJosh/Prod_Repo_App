@@ -190,46 +190,43 @@ docker compose build
 
 ---
 
-## Part 6: Initial OAuth Authentication
+## Part 6: Deploy Services
 
-### Step 1: Start Backend Only
+### Step 1: Update Code from GitHub
 
 ```bash
-docker compose up backend
+cd ~/NYC_Code
+git pull origin main
 ```
 
-### Step 2: Authorize Google APIs
-
-You'll see output like:
+**Expected output:**
 ```
-Please visit this URL to authorize this application:
-https://accounts.google.com/o/oauth2/auth?client_id=...
+Updating 5f20012..41bb7e3
+Fast-forward
+ GCP_SETUP_GUIDE.md | 545 +++++++++++++++++++++
+ backend/app.py     |   2 +-
+ 2 files changed, 546 insertions(+), 1 deletion(-)
 ```
 
-**Actions:**
-1. Copy the entire URL
-2. Open in your browser (on your local machine)
-3. Sign in with your Google account
-4. Grant all permissions (Drive, Sheets, Docs)
-5. You'll see: "The authentication flow has completed"
+### Step 2: Rebuild Backend Image
 
-### Step 3: Stop Backend
+```bash
+docker compose down
+docker compose build backend
+```
 
-In the SSH terminal, press **Ctrl+C**
+**Expected output:**
+```
+[+] Building 1.2s (14/14) FINISHED
+```
 
-The token is now saved in the Docker volume.
-
----
-
-## Part 7: Start All Services
-
-### Start in Detached Mode
+### Step 3: Start All Services
 
 ```bash
 docker compose up -d
 ```
 
-### Verify Services Are Running
+### Step 4: Verify Services Are Running
 
 ```bash
 docker compose ps
@@ -237,69 +234,120 @@ docker compose ps
 
 **Expected output:**
 ```
-NAME                      STATUS
-nyc-code-backend          Up
-nyc-code-frontend         Up
+NAME                STATUS
+nyc-code-backend    Up 8 seconds (healthy)
+nyc-code-frontend   Up 8 seconds (health: starting)
 ```
-
-### Check Logs
-
-```bash
-docker compose logs -f
-```
-
-Press **Ctrl+C** to stop viewing logs.
 
 ---
 
-## Part 8: Configure Firewall (GCP Console)
+## Part 7: Initial OAuth Authentication (If Needed)
 
-### Allow Backend API Access
+**Note:** If you previously authenticated, the token already exists and you can skip this part.
 
-**In GCP Console:**
+### When OAuth Is Needed
 
-1. Go to **VPC network** → **Firewall**
-2. Click **Create Firewall Rule**
-3. Settings:
-   - Name: `allow-backend-api`
-   - Direction: Ingress
-   - Targets: All instances in network
-   - Source IP ranges: `0.0.0.0/0`
-   - Protocols/ports: `tcp:5000`
-4. Click **Create**
+If you see this error in logs:
+```
+Please visit this URL to authorize this application:
+https://accounts.google.com/o/oauth2/auth?client_id=...
+```
 
-**Or via gcloud CLI (on local machine):**
+### Step 1: View Logs
 
 ```bash
-gcloud compute firewall-rules create allow-backend-api \
-  --allow tcp:5000 \
-  --direction=INGRESS \
-  --source-ranges=0.0.0.0/0 \
-  --description="Allow backend API traffic on port 5000"
+docker compose logs backend
 ```
+
+### Step 2: Copy OAuth URL
+
+Find the line starting with:
+```
+Please visit this URL to authorize...
+```
+
+### Step 3: Authorize
+
+1. Copy the entire URL
+2. Open in your browser (on your local machine)
+3. Sign in with your Google account
+4. Grant all permissions (Drive, Sheets, Docs)
+5. You'll see: "The authentication flow has completed"
+
+### Step 4: Restart Services
+
+```bash
+docker compose restart backend
+```
+
+The token is now saved in the Docker volume.
+
+---
+
+## Part 8: Configure Firewall
+
+### Allow Backend API Access on Port 5000
+
+**On your local machine** (where gcloud CLI is installed):
+
+```bash
+gcloud compute firewall-rules create allow-backend-api --allow tcp:5000
+```
+
+**Expected output:**
+```
+Creating firewall...done.
+NAME               NETWORK  DIRECTION  PRIORITY  ALLOW     DENY  DISABLED
+allow-backend-api  default  INGRESS    1000      tcp:5000        False
+```
+
+**Optional:** Add more specific rules via GCP Console:
+
+1. Go to **VPC network** → **Firewall**
+2. Find `allow-backend-api`
+3. Edit to add:
+   - Description: "Allow backend API traffic"
+   - Source IP ranges: Specific IPs instead of `0.0.0.0/0` for security
 
 ---
 
 ## Part 9: Test Backend
 
-### From GCP Instance
+### Test 1: From GCP Instance (Internal)
+
+**In your SSH session:**
 
 ```bash
 curl http://localhost:5000/health
 ```
 
-**Expected:**
+**Expected output:**
 ```json
-{"status":"ok","message":"NYC Code API is running"}
+{
+  "message": "NYC Code API is running",
+  "status": "ok"
+}
 ```
 
-### From External (Your Local Machine)
+### Test 2: From External (Your Local Machine)
+
+**On your local machine:**
 
 ```bash
 curl http://34.48.90.93:5000/health
 ```
 
+**Or open in browser:**
+```
+http://34.48.90.93:5000/health
+```
+
 Should return the same JSON response.
+
+**If external test fails:**
+- Verify firewall rule exists: `gcloud compute firewall-rules list | grep allow-backend-api`
+- Check backend is bound to 0.0.0.0: `docker compose logs backend | grep "Running on"`
+- Should see: `Running on http://0.0.0.0:5000` (NOT `127.0.0.1`)
 
 ---
 
