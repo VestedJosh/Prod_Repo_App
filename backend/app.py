@@ -15,9 +15,10 @@ app = Flask(__name__)
 CORS(app, resources={
     r"/api/*": {
         "origins": [
-            "http://localhost:3000",  # Local development
-            "https://*.vercel.app",    # Vercel preview deployments
-            "https://your-domain.com"  # Your custom domain (if you have one)
+            "http://localhost:3000",     # Local development
+            "https://*.vercel.app",       # Vercel preview deployments
+            "https://www.nyccode.org",    # Production frontend
+            "https://nyccode.org"         # Without www
         ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
