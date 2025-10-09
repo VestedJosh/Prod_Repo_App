@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
+import ApiDocs from './components/ApiDocs';
 import './App.css';
 
 function App() {
+  const [showApiDocs, setShowApiDocs] = useState(false);
   const [step, setStep] = useState(1);
   const [githubUrl, setGithubUrl] = useState('');
   const [email, setEmail] = useState('');
@@ -113,6 +115,23 @@ function App() {
     setDriveLink('');
     setTimeRemaining(30);
   };
+
+  // If showing API docs, render that component
+  if (showApiDocs) {
+    return (
+      <div className="App">
+        <div className="nav-header">
+          <button
+            className="nav-button"
+            onClick={() => setShowApiDocs(false)}
+          >
+            ← Back to Home
+          </button>
+        </div>
+        <ApiDocs />
+      </div>
+    );
+  }
 
   return (
     <div className="App">
@@ -227,6 +246,15 @@ function App() {
 
         <div className="repo-info">
           {githubUrl && <p><strong>Repository:</strong> {githubUrl}</p>}
+        </div>
+
+        <div className="api-docs-section">
+          <button
+            className="api-docs-link"
+            onClick={() => setShowApiDocs(true)}
+          >
+            API Docs
+          </button>
         </div>
       </div>
     </div>

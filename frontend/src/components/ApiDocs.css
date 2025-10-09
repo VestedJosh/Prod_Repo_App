@@ -1,0 +1,397 @@
+.api-docs {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.api-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 60px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.api-docs h1 {
+  color: #667eea;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.api-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 40px;
+  font-size: 1.1rem;
+}
+
+.api-section {
+  margin: 40px 0;
+  padding: 30px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.api-section:last-child {
+  border-bottom: none;
+}
+
+/* LLM Prompt Section Styling */
+.llm-prompt-section {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 3px solid #4caf50;
+  border-radius: 15px;
+  padding: 30px !important;
+  margin: 30px 0 !important;
+}
+
+.llm-prompt-section h2 {
+  color: #2e7d32;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.llm-subtitle {
+  color: #558b2f;
+  font-style: italic;
+  margin-bottom: 20px !important;
+  font-size: 1rem;
+}
+
+.llm-instructions {
+  background: #263238 !important;
+  border: 2px solid #4caf50;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.llm-instructions pre {
+  color: #a5d6a7 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+}
+
+.llm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.llm-header > div {
+  flex: 1;
+}
+
+.copy-button {
+  background: #4caf50;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.copy-button:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.copy-button.copied {
+  background: #2e7d32;
+}
+
+.api-section h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.api-section h3 {
+  color: #555;
+  font-size: 1.3rem;
+  margin: 25px 0 15px 0;
+}
+
+.api-section h4 {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 20px 0 10px 0;
+}
+
+.api-section p {
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 15px;
+}
+
+.code-block {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  color: #d4d4d4;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  margin: 0;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+.endpoint {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 10px;
+  margin: 20px 0;
+  border-left: 4px solid #667eea;
+}
+
+.method {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-right: 10px;
+}
+
+.method.post {
+  background: #28a745;
+  color: white;
+}
+
+.method.get {
+  background: #007bff;
+  color: white;
+}
+
+.status-list {
+  list-style: none;
+  padding: 0;
+}
+
+.status-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.status-list li:last-child {
+  border-bottom: none;
+}
+
+.status-list code, .endpoint code {
+  background: #fff3cd;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #856404;
+}
+
+.endpoint ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.endpoint li {
+  margin: 8px 0;
+  color: #666;
+}
+
+/* Example and Note Styling */
+.example-note {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 5px;
+}
+
+.example-note strong {
+  color: #1976d2;
+}
+
+.example-variations {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.example-variations h4 {
+  margin-top: 0;
+  color: #555;
+}
+
+.example-variations ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.example-variations li {
+  padding: 10px;
+  margin: 8px 0;
+  background: white;
+  border-radius: 5px;
+  border-left: 3px solid #667eea;
+}
+
+.example-variations code {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.response-note {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 5px;
+}
+
+.response-note strong {
+  color: #856404;
+}
+
+.param-details {
+  margin: 20px 0;
+}
+
+.param-details table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.param-details td {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  vertical-align: top;
+}
+
+.param-details td:first-child {
+  width: 25%;
+  font-weight: 600;
+  background: #f8f9fa;
+}
+
+.param-details td:nth-child(2) {
+  width: 15%;
+  color: #667eea;
+  font-style: italic;
+}
+
+.param-details td:nth-child(3) {
+  width: 15%;
+  color: #666;
+}
+
+.param-details td:last-child {
+  width: 45%;
+  color: #666;
+}
+
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.timeline-item {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border-top: 4px solid #667eea;
+}
+
+.timeline-item strong {
+  display: block;
+  color: #667eea;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.timeline-item p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.api-specs table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.api-specs td {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.api-specs td:first-child {
+  width: 200px;
+  color: #667eea;
+}
+
+.api-specs td:last-child {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .api-container {
+    padding: 30px 20px;
+  }
+
+  .api-docs h1 {
+    font-size: 2rem;
+  }
+
+  .timeline {
+    flex-direction: column;
+  }
+
+  .code-block {
+    padding: 15px;
+  }
+
+  .code-block pre {
+    font-size: 0.8rem;
+  }
+
+  .llm-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .copy-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .param-details table {
+    font-size: 0.85rem;
+  }
+
+  .param-details td {
+    padding: 8px;
+  }
+
+  .example-variations li {
+    font-size: 0.9rem;
+  }
+}

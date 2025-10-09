@@ -270,6 +270,152 @@ def generate_docs():
             'error': str(e)
         }), 500
 
+@app.route('/api/v1/generate', methods=['POST'])
+def api_v1_generate():
+    """
+    API v1 endpoint: Generate documentation for a GitHub repository
+    This endpoint creates the folder and starts processing immediately
+    """
+    try:
+        data = request.get_json()
+        github_url = data.get('github_url')
+
+        if not github_url or 'github.com' not in github_url:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid GitHub URL'
+            }), 400
+
+        print(f"[API v1] Creating folder for: {github_url}")
+
+        # Extract repo info
+        import re
+        pattern = r'github\.com/([^/]+)/([^/]+)'
+        match = re.search(pattern, github_url)
+        owner = match.group(1)
+        repo = match.group(2).replace('.git', '')
+
+        # Step 1: Find or create NYC_Code_Backend folder
+        admin_folder = find_or_create_folder('NYC_Code_Backend')
+        admin_folder_id = admin_folder['folder_id']
+
+        # Step 2: Create timestamped repo folder name
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        folder_name = f"{owner}_{repo}_{timestamp}"
+
+        # Step 3: Create repo folder in Drive immediately
+        repo_folder_result = find_or_create_folder(folder_name, admin_folder_id)
+        folder_id = repo_folder_result['folder_id']
+        drive_link = repo_folder_result['web_view_link']
+
+        print(f"[API v1] Folder created: {drive_link}")
+
+        # Find or create tracking sheet
+        tracking_sheet = find_or_create_tracking_sheet(admin_folder_id)
+        sheet_id = tracking_sheet['sheet_id']
+
+        # Add row to tracking sheet with status "Processing"
+        timestamp_iso = datetime.now().isoformat()
+        sheet_result = append_to_sheet(sheet_id, 'API', github_url, drive_link, timestamp_iso, status='Processing')
+        row_number = sheet_result['row_number']
+        ticket = sheet_result['ticket']
+
+        # Store processing status
+        processing_status[github_url] = {
+            'status': 'processing',
+            'folder_id': folder_id,
+            'folder_name': folder_name,
+            'drive_link': drive_link,
+            'repo_name': repo,
+            'created_at': timestamp_iso,
+            'sheet_id': sheet_id,
+            'row_number': row_number,
+            'ticket': ticket,
+            'background_started': True,
+            'queue_position': processing_queue.qsize() + 1,
+            'estimated_time': '5-30 minutes'
+        }
+
+        # Add to processing queue
+        print(f"[API v1] Adding to queue: {github_url} (Ticket: {ticket})")
+
+        queue_item = {
+            'github_url': github_url,
+            'folder_id': folder_id,
+            'repo_name': repo,
+            'sheet_id': sheet_id,
+            'row_number': row_number,
+            'ticket': ticket
+        }
+
+        processing_queue.put(queue_item)
+        print(f"[API v1] Queue size: {processing_queue.qsize()}, Currently processing: {is_processing}")
+
+        return jsonify({
+            'success': True,
+            'drive_link': drive_link,
+            'folder_name': folder_name,
+            'ticket': ticket,
+            'status': 'processing',
+            'queue_position': processing_status[github_url]['queue_position'],
+            'estimated_time': processing_status[github_url]['estimated_time']
+        })
+
+    except Exception as e:
+        print(f"[API v1] Error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/v1/status', methods=['GET'])
+def api_v1_status():
+    """
+    API v1 endpoint: Check the status of documentation generation
+    Query parameter: github_url
+    """
+    try:
+        github_url = request.args.get('github_url')
+
+        if not github_url:
+            return jsonify({
+                'success': False,
+                'error': 'github_url parameter is required'
+            }), 400
+
+        # Check if we have status for this URL
+        status_data = processing_status.get(github_url)
+
+        if not status_data:
+            return jsonify({
+                'success': False,
+                'error': 'No documentation found for this GitHub URL'
+            }), 404
+
+        response_data = {
+            'success': True,
+            'status': status_data['status'],
+            'drive_link': status_data['drive_link'],
+            'folder_name': status_data['folder_name']
+        }
+
+        # Add master doc link if available
+        if status_data.get('master_doc_link'):
+            response_data['master_doc_link'] = status_data['master_doc_link']
+
+        # Add error if failed
+        if status_data['status'] == 'failed' and status_data.get('error'):
+            response_data['error'] = status_data['error']
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        print(f"[API v1 Status] Error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/share-docs', methods=['POST'])
 def share_docs():
     try:
