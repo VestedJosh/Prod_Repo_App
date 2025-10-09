@@ -1,0 +1,32 @@
+Strategy
+
+Up sell for
+
+Documentation --> Explaining
+
+If it's an app, keep the user guide focused on how the user uses the APP and the UI or Front end folder app.js 
+
+@Nehal where are the front end files 
+
+
+
+
+Running the software and reengineering it for your use case. --> Building
+
+
+
+Running the software and fixing the bugs unique to your system or hardware --> Getting Started
+
+
+Prompt Engineering for Documentation
+
+claude
+
+> Use the code in lendvest-finance and the documentation in Lendvest_lendvest-finance_20251005_223534 to create LMM
+optimized context to be used for writing user documentation for this repo. Focus on end-to-end tests and user
+stories if available ultrathink. Also, in the md file for creating LLM optimized context for writing documentation,
+include the detailed steps for the LLM to give the user  to more throughly use an LMM to write documentation (each
+section of the documentation)  given a 150k token context window for the LLM.
+
+
+

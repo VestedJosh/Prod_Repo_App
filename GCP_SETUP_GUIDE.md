@@ -47,7 +47,43 @@ gcloud compute ssh prod-repo-app-instance-v001 --zone us-east4-c
 
 ---
 
-## Part 2: Install Docker & Docker Compose
+## Part 2: Install Claude Code (Optional but Recommended)
+
+Once connected to the GCP instance, install Claude Code for easier development and debugging:
+
+### Step 1: Install Node.js and npm
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo apt-get install -y npm
+```
+
+### Step 2: Verify Installation
+
+```bash
+node --version
+# Expected: v18.x or higher
+```
+
+### Step 3: Install Claude Code
+
+```bash
+sudo npm install -g npm@10.2.4
+sudo npm install -g @anthropic-ai/claude-code
+```
+
+### Step 4: Launch Claude Code
+
+```bash
+claude
+```
+
+**Note:** You'll need an Anthropic API key. Follow the prompts to authenticate.
+
+---
+
+## Part 3: Install Docker & Docker Compose
 
 Once connected to the GCP instance:
 
@@ -102,7 +138,7 @@ docker compose version
 
 ---
 
-## Part 3: Clone Repository
+## Part 4: Clone Repository
 
 ### Option 1: Public Repository
 
@@ -129,7 +165,7 @@ cd NYC_Code
 
 ---
 
-## Part 4: Configure Environment
+## Part 5: Configure Environment
 
 ### Step 1: Create .env File
 
@@ -173,7 +209,7 @@ echo ""
 
 ---
 
-## Part 5: Build Docker Images
+## Part 6: Build Docker Images
 
 ```bash
 docker compose build
@@ -190,7 +226,7 @@ docker compose build
 
 ---
 
-## Part 6: Deploy Services
+## Part 7: Deploy Services
 
 ### Step 1: Update Code from GitHub
 
@@ -241,7 +277,7 @@ nyc-code-frontend   Up 8 seconds (health: starting)
 
 ---
 
-## Part 7: Initial OAuth Authentication (If Needed)
+## Part 8: Initial OAuth Authentication (If Needed)
 
 **Note:** If you previously authenticated, the token already exists and you can skip this part.
 
@@ -284,7 +320,7 @@ The token is now saved in the Docker volume.
 
 ---
 
-## Part 8: Configure Firewall
+## Part 9: Configure Firewall
 
 ### Allow Backend API Access on Port 5000
 
@@ -311,7 +347,7 @@ allow-backend-api  default  INGRESS    1000      tcp:5000        False
 
 ---
 
-## Part 9: Test Backend
+## Part 10: Test Backend
 
 ### Test 1: From GCP Instance (Internal)
 
@@ -351,7 +387,7 @@ Should return the same JSON response.
 
 ---
 
-## Part 10: Connect Vercel Frontend
+## Part 11: Connect Vercel Frontend
 
 ### Update Vercel Environment Variable
 

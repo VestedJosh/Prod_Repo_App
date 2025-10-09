@@ -1,0 +1,964 @@
+gcloud compute ssh prod-repo-app-instance-v001 --zone us-east4-c
+
+Dockerize C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md
+
+https://github.com/VestedJosh/Prod_Repo_App
+
+ Perfect! Your external IP is: 34.48.90.93
+
+ Update Vercel Environment Variable
+
+  1. Go to https://vercel.com/dashboard
+  2. Select your project (nyccode.org)
+  3. Go to Settings → Environment Variables
+  4. Find REACT_APP_API_URL or add it:
+    - Name: REACT_APP_API_URL
+    - Value: http://34.48.90.93:5000
+    - Environments: ✅ Production, ✅ Preview, ✅ Development
+  5. Click Save
+  6. Go to Deployments → Click ... on latest → Redeploy
+
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:18:35] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 172.18.0.1 - - [06/Oct/2025 11:19:04] "HEAD / HTTP/1.0" 404 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:19:05] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:19:35] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:20:05] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:20:35] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:21:06] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:21:36] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:22:06] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:22:36] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:23:06] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:23:36] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 11:24:06] "GET /health HTTP/1.1" 200 -
+jgott@prod-repo-app-instance-v001:~/NYC_Code$ docker compose logs backend --tail=150
+WARN[0000] /home/jgott/NYC_Code/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+nyc-code-backend  | [App] Queue worker thread started
+nyc-code-backend  |  * Serving Flask app 'app'
+nyc-code-backend  |  * Debug mode: on
+nyc-code-backend  | WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+nyc-code-backend  |  * Running on all addresses (0.0.0.0)
+nyc-code-backend  |  * Running on http://127.0.0.1:5000
+nyc-code-backend  |  * Running on http://172.18.0.2:5000
+nyc-code-backend  | Press CTRL+C to quit
+nyc-code-backend  |  * Restarting with stat
+nyc-code-backend  | [App] Queue worker thread started
+nyc-code-backend  |  * Debugger is active!
+nyc-code-backend  |  * Debugger PIN: 114-201-554
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:29:54] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 172.18.0.1 - - [06/Oct/2025 10:30:12] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:30:24] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:30:54] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:31:25] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:31:55] "GET /health HTTP/1.1" 200 -
+nyc-code-backend  | 127.0.0.1 - - [06/Oct/2025 10:32:25] "GET /health HTTP/1.1" 200
+
+  1. Test OAuth Flow Locally:
+  python backend/app.py
+  # Visit the OAuth URL in browser
+  2. Build and Test Docker Locally:
+  docker compose build
+  docker compose up
+  3. Deploy to GCP:
+    - Follow the complete guide in GCP_DEPLOYMENT.md
+    - Estimated setup time: 30-60 minutes
+    - Estimated cost: $15-30/month
+
+● You're stuck in the input mode. Press Ctrl+C to cancel, then try this simpler approach:
+
+  nano backend/.env
+
+  Then type these 3 lines exactly:
+  FLASK_ENV=production
+  GOOGLE_CREDENTIALS_PATH=/app/client_secret_720052609656-btvogmsj00bk0e6eulc6ec412glnlr2i
+  .apps.googleusercontent.com.json
+  TOKEN_DIR=/app/token-data
+
+  Then press:
+  - Ctrl+X (to exit)
+  - Y (to save)
+  - Enter (to confirm)
+
+  Then verify:
+  cat backend/.env
+
+  Try the nano editor - it's much easier! ✍️
+
+
+  1. Build the Docker image:
+  docker build -t deepwiki-to-md:latest .
+
+  2. Run the container to scrape Lendvest documentation:
+  docker run -v "%cd%/Documents":/app/Documents deepwiki-to-md:latest
+  "https://deepwiki.com/Lendvest/lendvest-finance"
+
+  For Linux/Mac, use this instead:
+  docker run -v "$(pwd)/Documents":/app/Documents deepwiki-to-md:latest
+  "https://deepwiki.com/Lendvest/lendvest-finance"
+
+  To make it work, you need to:
+  1. Make sure token.pickle exists in your backend folder (authenticate locally if you
+  haven't)
+  2. Add these files to your Docker image OR mount them as volumes:
+    - backend/token.pickle
+    - backend/client_secret_*.json
+  3. Ideally use a volume for token.pickle so token refreshes persist
+
+  Quick check: Do you already have token.pickle in your backend folder? (I saw it exists
+  from my glob search). If yes, you just need to include it in Docker and it should work.
+
+
+Ask if the google cloud client secret would work if it's on a server, and also, ask if we need to change something regarding oauth or the pickle token if the IP changes since we plan on hosting this on a server.
+
+
+Prompt
+
+> before scrapping starts, you should first create the repo folder, then wait 1 minute
+with a cron job while the documetation is generation, then after 1 minute ask the user to
+enter their email. After entering their email immediatly bring them to the page that says
+this Documentation has been shared to your Google Drive!
+
+Check your email: jgottlieb15@gmail.com
+
+Access your documentation folder:
+
+Open in Google Drive make sure that the repo folder is shared as soon as its genrated. On
+the backend the scrapping and uploading will be processing from when they first asked to
+generate their documenation. Okay, so now make these changes to the front and backend.
+
+
+Create a website for NYC Code. 
+
+
+Supabase
+
+Master Document
+
+Document Structure
+
+
+App, Google Drive, Oauth
+
+
+
+excalidraw
+
+Create a react mvp project called NYC_Code
+
+Have seprate sub directories for the front end and backend.
+
+Don't use a database, just process everything using react and google cloud APIs.
+
+Front End (react)
+
+Step 1
+
+Enter a Public GitHub Repo URL: https://github.com/openai/openai-python
+
+Step 2
+
+Generate documentation for the GitHub Repo
+
+Step 3
+
+Open and Share the documentation on Google Drive
+
+---------------------------------------------------------------------------------------
+
+Backend (react): (Input https://github.com/openai/openai-python, processing step 1: change github to deepwiki, processing step 2: run `deepwiki_to_md` {python -m deepwiki_to_md.run_scraper "https://deepwiki.com/openai/openai-python"}
+
+When the script completes, in the 
+
+Front End
+
+Enter your email to recieve the documentation in your Google Drive for Free: 
+
+(Backend, Save Email, Repo, and timestamp to a google sheet & share it with them on google drive)
+
+Create a config file to organize all the credentials you need for the google cloud sheets/drive apis
+The admin email is josh@klevel.one
+
+https://deepwiki.com/openai/openai-python
+
+
+Admin Steps
+
+Secure NYCcode.org domain
+Create NYCcode.org website
+Create NYCcode.org google Drive/ google domain
+
+MVP Steps
+
+Use K Level 1 Inc.
+Use josh@klevel.one as the domain
+
+
+
+Then Stripe, for API, rate limited access to open AI.
+
+Promo code for cuny.edu domains
+
+Steps to run the software using Kilo Code
+
+This will get people running the NYC-Node verifier. 
+
+
+
+local 
+
+  Complete System Architecture
+
+  1. GitHub URL to DeepWiki Conversion (services/doc_generator.py:7-23)
+
+  Process:
+  - Input: GitHub URL (e.g., https://github.com/openai/openai-python)
+  - Regex Pattern: Extracts owner and repository name using r'github\.com/([^/]+)/([^/]+)'
+  - Transformation: https://github.com/{owner}/{repo} → https://deepwiki.com/{owner}/{repo}
+  - Output: DeepWiki URL (e.g., https://deepwiki.com/openai/openai-python)
+
+  Code Flow:
+  def github_to_deepwiki(github_url):
+      pattern = r'github\.com/([^/]+)/([^/]+)'
+      match = re.search(pattern, github_url)
+      owner = match.group(1)
+      repo = match.group(2).replace('.git', '')
+      return f"https://deepwiki.com/{owner}/{repo}"
+
+  ---
+  2. File Scraping Process (services/doc_generator.py:25-76)
+
+  Subprocess Invocation:
+  - Creates output directory: output/{owner}_{repo}/
+  - Executes external Python module: deepwiki_to_md via subprocess
+  - Command: python -m deepwiki_to_md.run_scraper {deepwiki_url} --output-dir {output_dir}
+  - Timeout: 120 seconds (2 minutes)
+  - Working directory: C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md
+
+  DeepWiki Scraper Architecture (deepwiki_to_md/deepwiki_to_md.py):
+
+  The scraper has three scraping strategies with priority order:
+
+  Priority 1: DirectMarkdownScraper (Highest Priority)
+
+  - Fetches markdown content directly from DeepWiki's API endpoints
+  - Bypasses HTML parsing entirely for faster, cleaner extraction
+
+  Priority 2: Alternative Scraper (scrape_deepwiki)
+
+  - Uses HTTP requests to fetch raw HTML
+  - Parses specific HTML structure from DeepWiki pages
+  - Fallback when DirectMarkdownScraper fails
+
+  Priority 3: Standard Scraper (Lowest Priority)
+
+  - Fetches HTML via requests library
+  - Uses BeautifulSoup for parsing
+  - Extracts navigation items from ul.flex-1.flex-shrink-0.space-y-1.overflow-y-auto.py-1
+  - For each navigation item:
+    a. Fetches page HTML
+    b. Extracts main content using CSS selectors (tries main article, main, .content, etc.)
+    c. Converts HTML to Markdown using markdownify library
+    d. Removes first 28 lines (header/navigation boilerplate)
+    e. Fixes markdown links by converting [text](url) → [text]()
+    f. Saves to .md files
+
+  Content Extraction (deepwiki_to_md.py:265-336):
+  # Tries multiple selectors in order of specificity:
+  selectors = [
+      'main article',           # Most specific
+      'main .content',
+      'main',
+      'article',
+      '.content',
+      '.markdown-body',
+      'div.container div.row'   # Most general
+  ]
+
+  HTML to Markdown Conversion (deepwiki_to_md.py:338-379):
+  - Removes navigation menu using BeautifulSoup
+  - Converts HTML to Markdown with ATX-style headings (#, ##, ###)
+  - Uses markdownify library for conversion
+
+  Output Structure:
+  output/
+    └── {owner}_{repo}/
+        └── {repo}/
+            └── md/
+                ├── 1-overview.md
+                ├── 2-architecture.md
+                ├── 3-deployment.md
+                └── ... (multiple .md files)
+
+  ---
+  3. Flask API Endpoints (app.py)
+
+  Endpoint: /api/generate-docs (POST) (app.py:210-271)
+
+  Flow:
+  1. Receives {"githubUrl": "https://github.com/owner/repo"}
+  2. Extracts owner and repo name
+  3. Immediately creates Google Drive folder structure:
+    - Finds/creates NYC_Code_Backend folder
+    - Creates timestamped subfolder: {owner}_{repo}_{timestamp}
+    - Returns Drive link to user immediately
+  4. Stores processing status in memory:
+  processing_status[github_url] = {
+      'status': 'initializing',
+      'folder_id': folder_id,
+      'drive_link': drive_link,
+      'repo_name': repo,
+      'background_started': False
+  }
+
+  Endpoint: /api/share-docs (POST) (app.py:273-369)
+
+  Flow:
+  1. Receives {"githubUrl": "...", "email": "user@example.com"}
+  2. Shares existing Drive folder with user's email
+  3. Creates/updates tracking Google Sheet:
+    - Finds/creates NYC_Code_Tracking sheet in admin folder
+    - Appends row: [email, repo_url, drive_link, timestamp, "Processing", ticket_number]
+    - Ticket number = count of currently processing repos
+  4. Adds job to processing queue:
+  queue_item = {
+      'github_url': github_url,
+      'folder_id': folder_id,
+      'repo_name': repo_name,
+      'sheet_id': sheet_id,
+      'row_number': row_number
+  }
+  processing_queue.put(queue_item)
+
+  ---
+  4. Background Processing Queue (app.py:80-204)
+
+  Queue Worker Thread (app.py:160-204):
+  - Runs as daemon thread (starts when Flask app starts)
+  - Processes repos sequentially, one at a time
+  - Blocks until an item is available in queue
+
+  Processing Flow (app.py:80-159):
+  def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
+      # 1. Generate documentation (calls deepwiki scraper)
+      result = generate_documentation(github_url)
+
+      # 2. Get markdown folder path
+      md_folder_path = result['md_folder_path']  # e.g., output/owner_repo/repo/md
+
+      # 3. List all .md files
+      md_files = [f for f in os.listdir(md_folder_path) if f.endswith('.md')]
+
+      # 4. Create master Google Doc with index
+      master_doc = create_master_doc(repo_name, md_files, folder_id)
+
+      # 5. Upload all markdown files to Drive folder
+      upload_folder_structure(md_folder_path, folder_id)
+
+      # 6. Update Google Sheet status to "Complete"
+      update_sheet_status(sheet_id, row_number, 'Complete')
+
+      # 7. Clean up local files
+      shutil.rmtree(repo_folder_path)
+
+  ---
+  5. Google Drive Upload (services/google_drive.py)
+
+  Authentication (google_drive.py:20-50):
+
+  - Uses OAuth2 with Google Drive, Sheets, and Docs APIs
+  - Scopes: drive.file, spreadsheets, documents
+  - Credentials stored in token.pickle
+  - Auto-refreshes expired tokens
+
+  Master Document Creation (google_drive.py:522-633):
+
+  Creates a Google Doc named {repo_name}_Master_Index containing:
+
+  Content Structure:
+  HOW TO DOWNLOAD .MD FILES FROM GOOGLE DRIVE
+
+  Step 1: Locate the Files
+  Step 2: Download Individual Files
+  Step 3: Download All Files at Once
+  Step 4: Open .md Files
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  REPOSITORY: {repo_name}
+
+  FILE INDEX:
+
+  1. 1-overview.md
+  2. 2-architecture.md
+  3. 3-deployment.md
+  ...
+
+  Total Files: {count}
+
+  Implementation:
+  - Uses Google Docs API v1
+  - Formats title as HEADING_1 style
+  - Inserts text at index 1 (beginning of document)
+
+  File Upload (google_drive.py:246-274):
+
+  def upload_folder_structure(local_folder_path, folder_id):
+      for filename in os.listdir(local_folder_path):
+          if os.path.isfile(file_path):
+              # Upload with MIME type: text/markdown
+              upload_file_to_drive(file_path, filename, folder_id)
+              # Set permissions: anyone with link can view
+
+  Permissions:
+  - Sets type: 'anyone', role: 'reader' for all files
+  - Shares folder with user's email via share_with_email(folder_id, email)
+
+  Tracking Sheet Management (google_drive.py:354-415):
+
+  Schema:
+  | Email            | Repository URL         | Google Drive Link            | Timestamp           | Status     |
+  Ticket |
+  |------------------|------------------------|------------------------------|---------------------|------------|---
+  -----|
+  | user@example.com | https://github.com/... | https://drive.google.com/... | 2025-01-15T10:30:00 | Processing | 0
+       |
+
+  Status Updates:
+  - Initial: "Processing"
+  - Success: "Complete" (via update_sheet_status())
+  - Failure: "Failed"
+
+  ---
+  6. Cleanup Process (app.py:131-158)
+
+  After successful upload:
+  # Deletes entire repo folder from local disk
+  if repo_folder_path and os.path.exists(repo_folder_path):
+      shutil.rmtree(repo_folder_path)
+      # Removes: output/{owner}_{repo}/
+
+  On failure:
+  - Still attempts cleanup to prevent disk clutter
+  - Updates Google Sheet status to "Failed"
+
+  ---
+  Complete Data Flow Diagram
+
+  User Request
+      ↓
+  [POST /api/generate-docs]
+      ↓
+  GitHub URL → DeepWiki URL conversion
+      ↓
+  Create Drive folder immediately
+      ↓
+  Return Drive link to user
+      ↓
+  [POST /api/share-docs with email]
+      ↓
+  Share folder + Create sheet entry
+      ↓
+  Add to processing queue
+      ↓
+  [Queue Worker Thread]
+      ↓
+  Subprocess: deepwiki_to_md scraper
+      ↓ (tries 3 strategies in order)
+  ├─ DirectMarkdownScraper (API)
+  ├─ Alternative Scraper (HTTP + BeautifulSoup)
+  └─ Standard Scraper (Navigation extraction)
+      ↓
+  Saves .md files to output/{owner}_{repo}/{repo}/md/
+      ↓
+  Create Master Doc in Drive
+      ↓
+  Upload all .md files to Drive folder
+      ↓
+  Update Sheet status: "Complete"
+      ↓
+  Delete local files (cleanup)
+
+  ---
+  Key Design Decisions
+
+  1. Immediate folder creation: Users get Drive link instantly, scraping happens asynchronously
+  2. Sequential queue: Prevents overwhelming DeepWiki servers with parallel requests
+  3. Three-tier scraping strategy: Robustness through fallback mechanisms
+  4. Automatic cleanup: Prevents server disk from filling up
+  5. Ticket system: Users can track their position in the queue
+  6. Master document: Provides user instructions and file index in Drive
+
+
+
+--------------- Context from last session --------------------------------
+
+● Bash(docker build -t nyc-code-backend . && docker rm -f nyc-code-backend && docker run -d -p 5000:5000 -v                                                       timeout: 5m
+      $(pwd)/service-account-key.json:/app/service-account-key.js…)                                                                                               0s
+  ⎿  Interrupted · What should Claude do instead?
+
+> before rebuilding make sure all the dependencies are there and think through the logic if this will work successfully
+
+● Good point. Let me trace through the logic carefully:
+
+  Current Issue:
+  - The scraper is failing with ModuleNotFoundError: No module named 'markdownify'
+  - This means when we installed deepwiki_to_md with pip install -e ., it didn't install its dependencies
+
+  Why it failed:
+  Let me check the setup.py to see if it properly declares dependencies:
+
+● Read(deepwiki_to_md/setup.py)
+  ⎿  Read 44 lines (ctrl+o to expand)
+
+● Found the problem!
+
+  The setup.py is missing markdownify and pyyaml in its install_requires list, even though:
+  - requirements.txt has them
+  - The code actually imports and uses them
+
+  Solution:
+  My Dockerfile edit should work because it:
+  1. First installs from requirements.txt (which has markdownify and pyyaml)
+  2. Then installs the package with -e
+
+  Let me verify the logic will work:
+
+  # Step 1: Install everything in requirements.txt (includes markdownify, pyyaml)
+  pip install --no-cache-dir -r deepwiki_to_md/requirements.txt
+
+  # Step 2: Install deepwiki_to_md in editable mode
+  cd deepwiki_to_md && pip install --no-cache-dir -e .
+
+  This should work because:
+  - ✅ markdownify will be installed in step 1
+  - ✅ pyyaml will be installed in step 1
+  - ✅ deepwiki_to_md code will be available via -e .
+  - ✅ All dependencies declared in setup.py will also be installed (some duplicates, but that's OK)
+
+  The logic is sound. Should I proceed with the rebuild?
+
+> proceed
+
+● Bash(docker build -t nyc-code-backend . && docker rm -f nyc-code-backend && docker run -d -p 5000:5000 -v                                                       timeout: 5m
+      $(pwd)/service-account-key.json:/app/service-account-key.js…)                                                                                               0s
+  ⎿  nyc-code-backend
+     3a8bfd84b315b52d492a5897e6f94e517b54b8fb22c54398fe60ee868b743341
+     #0 building with "default" instance using docker driver
+     … +172 lines (ctrl+o to expand)
+
+● Perfect! All dependencies installed successfully, including:
+  - ✅ markdownify-1.2.0
+  - ✅ pyyaml-6.0.3
+  - ✅ selenium-4.36.0
+  - ✅ All other required packages
+
+  Let me verify it's running:
+
+● Bash(sleep 3 && curl -s http://localhost:5000/health | python3 -m json.tool)
+  ⎿  {
+         "message": "NYC Code API is running",
+         "status": "ok"
+     }
+
+● Excellent! Backend is running with all dependencies properly installed. Now the deepwiki scraper should work correctly.
+
+  Summary of what's now configured:
+  - ✅ Google Drive, Sheets, Docs APIs enabled
+  - ✅ Service account authenticated
+  - ✅ Using your shared admin folder (17Sx0mgJdpmylS7Jqp6dKqY9muYoNo1IJ)
+  - ✅ Using your existing tracking sheet (1XtJ2WV0UPfTS3Zl9_gvdU0hhIdpSWpExAlXnlOU4X9s)
+  - ✅ deepwiki_to_md installed with ALL dependencies (markdownify, pyyaml, selenium, etc.)
+
+  The scraper should now be able to:
+  1. Scrape the DeepWiki documentation
+  2. Generate markdown files
+  3. Upload them to your Google Drive folder
+
+  Ready to test from your Vercel frontend!
+
+> this is how it works on my local Complete System Architecture
+
+  1. GitHub URL to DeepWiki Conversion (services/doc_generator.py:7-23)
+
+  Process:
+  - Input: GitHub URL (e.g., https://github.com/openai/openai-python)
+  - Regex Pattern: Extracts owner and repository name using r'github\.com/([^/]+)/([^/]+)'
+  - Transformation: https://github.com/{owner}/{repo} → https://deepwiki.com/{owner}/{repo}
+  - Output: DeepWiki URL (e.g., https://deepwiki.com/openai/openai-python)
+
+  Code Flow:
+  def github_to_deepwiki(github_url):
+      pattern = r'github\.com/([^/]+)/([^/]+)'
+      match = re.search(pattern, github_url)
+      owner = match.group(1)
+      repo = match.group(2).replace('.git', '')
+      return f"https://deepwiki.com/{owner}/{repo}"
+
+  ---
+  2. File Scraping Process (services/doc_generator.py:25-76)
+
+  Subprocess Invocation:
+  - Creates output directory: output/{owner}_{repo}/
+  - Executes external Python module: deepwiki_to_md via subprocess
+  - Command: python -m deepwiki_to_md.run_scraper {deepwiki_url} --output-dir {output_dir}
+  - Timeout: 120 seconds (2 minutes)
+  - Working directory: C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md
+
+  DeepWiki Scraper Architecture (deepwiki_to_md/deepwiki_to_md.py):
+
+  The scraper has three scraping strategies with priority order:
+
+  Priority 1: DirectMarkdownScraper (Highest Priority)
+
+  - Fetches markdown content directly from DeepWiki's API endpoints
+  - Bypasses HTML parsing entirely for faster, cleaner extraction
+
+  Priority 2: Alternative Scraper (scrape_deepwiki)
+
+  - Uses HTTP requests to fetch raw HTML
+  - Parses specific HTML structure from DeepWiki pages
+  - Fallback when DirectMarkdownScraper fails
+
+  Priority 3: Standard Scraper (Lowest Priority)
+
+  - Fetches HTML via requests library
+  - Uses BeautifulSoup for parsing
+  - Extracts navigation items from ul.flex-1.flex-shrink-0.space-y-1.overflow-y-auto.py-1
+  - For each navigation item:
+    a. Fetches page HTML
+    b. Extracts main content using CSS selectors (tries main article, main, .content, etc.)
+    c. Converts HTML to Markdown using markdownify library
+    d. Removes first 28 lines (header/navigation boilerplate)
+    e. Fixes markdown links by converting [text](url) → [text]()
+    f. Saves to .md files
+
+  Content Extraction (deepwiki_to_md.py:265-336):
+  # Tries multiple selectors in order of specificity:
+  selectors = [
+      'main article',           # Most specific
+      'main .content',
+      'main',
+      'article',
+      '.content',
+      '.markdown-body',
+      'div.container div.row'   # Most general
+  ]
+
+  HTML to Markdown Conversion (deepwiki_to_md.py:338-379):
+  - Removes navigation menu using BeautifulSoup
+  - Converts HTML to Markdown with ATX-style headings (#, ##, ###)
+  - Uses markdownify library for conversion
+
+  Output Structure:
+  output/
+    └── {owner}_{repo}/
+        └── {repo}/
+            └── md/
+                ├── 1-overview.md
+                ├── 2-architecture.md
+                ├── 3-deployment.md
+                └── ... (multiple .md files)
+
+  ---
+  3. Flask API Endpoints (app.py)
+
+  Endpoint: /api/generate-docs (POST) (app.py:210-271)
+
+  Flow:
+  1. Receives {"githubUrl": "https://github.com/owner/repo"}
+  2. Extracts owner and repo name
+  3. Immediately creates Google Drive folder structure:
+    - Finds/creates NYC_Code_Backend folder
+    - Creates timestamped subfolder: {owner}_{repo}_{timestamp}
+    - Returns Drive link to user immediately
+  4. Stores processing status in memory:
+  processing_status[github_url] = {
+      'status': 'initializing',
+      'folder_id': folder_id,
+      'drive_link': drive_link,
+      'repo_name': repo,
+      'background_started': False
+  }
+
+  Endpoint: /api/share-docs (POST) (app.py:273-369)
+
+  Flow:
+  1. Receives {"githubUrl": "...", "email": "user@example.com"}
+  2. Shares existing Drive folder with user's email
+  3. Creates/updates tracking Google Sheet:
+    - Finds/creates NYC_Code_Tracking sheet in admin folder
+    - Appends row: [email, repo_url, drive_link, timestamp, "Processing", ticket_number]
+    - Ticket number = count of currently processing repos
+  4. Adds job to processing queue:
+  queue_item = {
+      'github_url': github_url,
+      'folder_id': folder_id,
+      'repo_name': repo_name,
+      'sheet_id': sheet_id,
+      'row_number': row_number
+  }
+  processing_queue.put(queue_item)
+
+  ---
+  4. Background Processing Queue (app.py:80-204)
+
+  Queue Worker Thread (app.py:160-204):
+  - Runs as daemon thread (starts when Flask app starts)
+  - Processes repos sequentially, one at a time
+  - Blocks until an item is available in queue
+
+  Processing Flow (app.py:80-159):
+  def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
+      # 1. Generate documentation (calls deepwiki scraper)
+      result = generate_documentation(github_url)
+
+      # 2. Get markdown folder path
+      md_folder_path = result['md_folder_path']  # e.g., output/owner_repo/repo/md
+
+      # 3. List all .md files
+      md_files = [f for f in os.listdir(md_folder_path) if f.endswith('.md')]
+
+      # 4. Create master Google Doc with index
+      master_doc = create_master_doc(repo_name, md_files, folder_id)
+
+      # 5. Upload all markdown files to Drive folder
+      upload_folder_structure(md_folder_path, folder_id)
+
+      # 6. Update Google Sheet status to "Complete"
+      update_sheet_status(sheet_id, row_number, 'Complete')
+
+      # 7. Clean up local files
+      shutil.rmtree(repo_folder_path)
+
+  ---
+  5. Google Drive Upload (services/google_drive.py)
+
+  Authentication (google_drive.py:20-50):
+
+  - Uses OAuth2 with Google Drive, Sheets, and Docs APIs
+  - Scopes: drive.file, spreadsheets, documents
+  - Credentials stored in token.pickle
+  - Auto-refreshes expired tokens
+
+  Master Document Creation (google_drive.py:522-633):
+
+  Creates a Google Doc named {repo_name}_Master_Index containing:
+
+  Content Structure:
+  HOW TO DOWNLOAD .MD FILES FROM GOOGLE DRIVE
+
+  Step 1: Locate the Files
+  Step 2: Download Individual Files
+  Step 3: Download All Files at Once
+  Step 4: Open .md Files
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  REPOSITORY: {repo_name}
+
+  FILE INDEX:
+
+  1. 1-overview.md
+  2. 2-architecture.md
+  3. 3-deployment.md
+  ...
+
+  Total Files: {count}
+
+  Implementation:
+  - Uses Google Docs API v1
+  - Formats title as HEADING_1 style
+  - Inserts text at index 1 (beginning of document)
+
+  File Upload (google_drive.py:246-274):
+
+  def upload_folder_structure(local_folder_path, folder_id):
+      for filename in os.listdir(local_folder_path):
+          if os.path.isfile(file_path):
+              # Upload with MIME type: text/markdown
+              upload_file_to_drive(file_path, filename, folder_id)
+              # Set permissions: anyone with link can view
+
+  Permissions:
+  - Sets type: 'anyone', role: 'reader' for all files
+  - Shares folder with user's email via share_with_email(folder_id, email)
+
+  Tracking Sheet Management (google_drive.py:354-415):
+
+  Schema:
+  | Email            | Repository URL         | Google Drive Link            | Timestamp           | Status     |
+  Ticket |
+  |------------------|------------------------|------------------------------|---------------------|------------|---
+  -----|
+  | user@example.com | https://github.com/... | https://drive.google.com/... | 2025-01-15T10:30:00 | Processing | 0
+       |
+
+  Status Updates:
+  - Initial: "Processing"
+  - Success: "Complete" (via update_sheet_status())
+  - Failure: "Failed"
+
+  ---
+  6. Cleanup Process (app.py:131-158)
+
+  After successful upload:
+  # Deletes entire repo folder from local disk
+  if repo_folder_path and os.path.exists(repo_folder_path):
+      shutil.rmtree(repo_folder_path)
+      # Removes: output/{owner}_{repo}/
+
+  On failure:
+  - Still attempts cleanup to prevent disk clutter
+  - Updates Google Sheet status to "Failed"
+
+  ---
+  Complete Data Flow Diagram
+
+  User Request
+      ↓
+  [POST /api/generate-docs]
+      ↓
+  GitHub URL → DeepWiki URL conversion
+      ↓
+  Create Drive folder immediately
+      ↓
+  Return Drive link to user
+      ↓
+  [POST /api/share-docs with email]
+      ↓
+  Share folder + Create sheet entry
+      ↓
+  Add to processing queue
+      ↓
+  [Queue Worker Thread]
+      ↓
+  Subprocess: deepwiki_to_md scraper
+      ↓ (tries 3 strategies in order)
+  ├─ DirectMarkdownScraper (API)
+  ├─ Alternative Scraper (HTTP + BeautifulSoup)
+  └─ Standard Scraper (Navigation extraction)
+      ↓
+  Saves .md files to output/{owner}_{repo}/{repo}/md/
+      ↓
+  Create Master Doc in Drive
+      ↓
+  Upload all .md files to Drive folder
+      ↓
+  Update Sheet status: "Complete"
+      ↓
+  Delete local files (cleanup)
+
+  ---
+  Key Design Decisions
+
+  1. Immediate folder creation: Users get Drive link instantly, scraping happens asynchronously
+  2. Sequential queue: Prevents overwhelming DeepWiki servers with parallel requests
+  3. Three-tier scraping strategy: Robustness through fallback mechanisms
+  4. Automatic cleanup: Prevents server disk from filling up
+  5. Ticket system: Users can track their position in the queue
+  6. Master document: Provides user instructions and file index in Drive
+
+  This architecture ensures reliability, user experience, and resource management while handling potentially
+  long-running scraping operations.
+
+● Thank you for the detailed architecture! Now I can see the issue. Looking at your local setup, the scraper is being run from a specific working directory:
+
+  Working directory: C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md
+
+  But in the Docker container, we removed the cwd parameter. The scraper likely needs to be run from within its own directory because it may reference relative paths
+  internally.
+
+  However, since we installed it with pip install -e ., it should work from anywhere. Let me check the actual error by looking at what happens when the scraper runs. Let
+  me test it manually in the container:
+
+● Bash(docker exec nyc-code-backend python -m deepwiki_to_md.run_scraper --help)
+  ⎿  usage: run_scraper.py [-h] [--library NAME URL] [--output-dir OUTPUT_DIR]
+                           [--use-direct-scraper] [--no-direct-scraper]
+                           [--use-alternative-scraper] [--no-alternative-scraper]
+     … +32 lines (ctrl+o to expand)
+
+● Good! The scraper module works. Now let me test it with an actual scrape to see if it works:
+
+● Bash(docker exec nyc-code-backend python -m deepwiki_to_md.run_scraper https://deepwiki.com/openai/openai-python --output-dir /tmp/test 2>&1 | head -50) timeout: 1m 0s
+  ⎿  Traceback (most recent call last):
+       File "<frozen runpy>", line 198, in _run_module_as_main
+       File "<frozen runpy>", line 88, in _run_code
+     … +7 lines (ctrl+o to expand)
+
+● There's a mismatch between the run_scraper.py and DeepwikiScraper class. The GitHub version might be outdated or have incompatible versions. Let me check if there's a
+  newer commit or if we need to use a different approach:
+
+● Bash(cd /home/jgott/NYC_Code/backend/deepwiki_to_md && git log --oneline -5)
+  ⎿  f02ce07 Update README.md
+     0c2eaad Merge pull request #12 from yuyu1815/improve-readme
+     148c3f1 Address review comments: improve conciseness and clarity in README
+     … +2 lines (ctrl+o to expand)
+
+● The version has the latest commits. The issue is that run_scraper.py is passing parameters that the DeepwikiScraper class doesn't accept. This is a bug in the
+  deepwiki_to_md package itself.
+
+  Since this works on your local machine, you must have a different version. Let me check what version you're using locally by looking at your working setup. Can you tell
+  me what's in your local C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md - is it the same GitHub repo or a custom version?
+
+> It's a custom version
+
+● Ah, that's the issue! You have a custom version locally that works, but we cloned the public GitHub repo which has bugs/incompatibilities.
+
+  We need to copy YOUR custom version from your local machine to the backend. Where is your custom deepwiki_to_md folder? Is it on this machine or do you need to copy it
+  over?
+
+  If it's on this machine, let me find it:
+
+● Bash(find /home/jgott -name "deepwiki_to_md" -type d 2>/dev/null | grep -v ".git" | head -10)
+  ⎿  /home/jgott/NYC_Code/backend/deepwiki_to_md
+     /home/jgott/NYC_Code/backend/deepwiki_to_md/deepwiki_to_md
+
+● The custom version needs to be copied from your Windows machine (C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md) to this Linux backend.
+
+  Can you:
+  1. Copy your custom deepwiki_to_md folder from your Windows desktop to the backend directory, OR
+  2. Tell me where on this Linux machine you have the working custom version?
+
+  If you need to transfer it, you could:
+  - Use git to commit your custom version to a private repo
+  - Use SCP/SFTP to copy it
+  - Zip it and upload it
+
+  Which method would work best for you?
+
+> well, it was in the dockerfile, but I think you changed it
+
+● You're right! Let me check if there's another deepwiki_to_md folder that was already in the backend:
+
+● Bash(cd /home/jgott/NYC_Code/backend && git status)
+  ⎿  On branch main
+     Your branch is ahead of 'origin/main' by 1 commit.
+       (use "git push" to publish your local commits)
+     … +18 lines (ctrl+o to expand)
+
+● The deepwiki_to_md/ is showing as untracked, which means I added it (the GitHub clone). Let me check if there was an original one that git is tracking:
+
+● Bash(git ls-files | grep deepwiki)
+  ⎿  No matches found
+
+● No deepwiki files were tracked. Let me check the original Dockerfile to see if it references deepwiki:
+
+● Bash(git diff Dockerfile)
+  ⎿  diff --git a/backend/Dockerfile b/backend/Dockerfile
+     index 593efc2..db62f31 100644
+     --- a/backend/Dockerfile
+     … +13 lines (ctrl+o to expand)
+
+● I added that. The original Dockerfile didn't have deepwiki_to_md installation. So your custom version must be somewhere else on your system, or it needs to be added to
+  this repo.
+
+  Your custom deepwiki_to_md that works - is it:
+  1. On your Windows machine only?
+  2. Somewhere else on this Linux server?
+  3. Should it be committed to the NYC_Code repo?
+
+  We need to replace the GitHub clone I added with your working custom version. Can you provide the path or copy it over?
+
+jgott@prod-repo-app-instance-v001:~$
+
+On the vm, the service account currently has acesss to the admin google drive folder and the google sheet. focus on enabling the URL conversion, scrapping, downloading, and uploading functionality in that order
