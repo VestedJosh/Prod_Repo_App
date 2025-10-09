@@ -1,0 +1,620 @@
+# NYC Code API - GitHub Repository Documentation Generator
+
+> Automatically generate comprehensive markdown documentation for any public GitHub repository. Free REST API with Google Drive delivery.
+
+## What is NYC Code API?
+
+NYC Code API is a free, no-authentication REST API that transforms any public GitHub repository into comprehensive markdown documentation. The API analyzes repository structure, extracts documentation, and delivers organized markdown files via Google Drive.
+
+**Keywords:** GitHub documentation generator, API documentation, markdown generator, repository documentation, automated docs, GitHub API, documentation tool, free API, REST API
+
+**Base URL:** https://nyccode.org
+**Protocol:** HTTPS
+**Authentication:** None required
+**CORS:** Enabled
+**Rate Limiting:** None
+**Cost:** 100% free, no limits
+
+## Who Uses NYC Code API?
+
+- Developers documenting open source projects
+- Development teams onboarding new members
+- Technical writers creating documentation
+- DevOps engineers maintaining repository docs
+- Students learning from popular repositories
+- API developers building documentation tools
+
+## Quick Start - Generate Documentation in 30 Seconds
+
+Generate documentation for any GitHub repository with one API call:
+
+```bash
+curl -X POST https://nyccode.org/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "github_url": "https://github.com/psf/requests",
+    "email": "user@example.com"
+  }'
+```
+
+**Instant Response:**
+```json
+{
+  "success": true,
+  "drive_link": "https://drive.google.com/drive/folders/xxx",
+  "status": "processing",
+  "estimated_time": "5-30 minutes"
+}
+```
+
+**What happens next:**
+1. ✅ Google Drive folder created instantly
+2. ✅ Folder shared with your email
+3. ⏳ Documentation generates over 5-30 minutes
+4. ✅ All markdown files appear in Drive folder
+
+## API Endpoints Reference
+
+### POST /api/v1/generate - Generate GitHub Repository Documentation
+
+**Purpose:** Create comprehensive markdown documentation for any public GitHub repository.
+
+**Endpoint:** `POST https://nyccode.org/api/v1/generate`
+
+**Request Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body Parameters:**
+| Parameter | Type | Required | Description | Example |
+|-----------|------|----------|-------------|---------|
+| github_url | string | Yes | Full GitHub repository URL | https://github.com/facebook/react |
+| email | string | Yes | Email to share Google Drive folder | dev@example.com |
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Documentation is being generated...",
+  "drive_link": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWx",
+  "folder_name": "facebook_react_20251009_143805",
+  "ticket": "0",
+  "status": "processing",
+  "queue_position": 1,
+  "estimated_time": "5-30 minutes depending on repository size"
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "success": false,
+  "error": "Invalid GitHub URL. Please provide a valid public GitHub repository URL.",
+  "example": "https://github.com/openai/openai-python"
+}
+```
+
+**Example - Generate React Documentation:**
+```bash
+curl -X POST https://nyccode.org/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "github_url": "https://github.com/facebook/react",
+    "email": "developer@example.com"
+  }'
+```
+
+### GET /api/v1/status - Check Documentation Generation Status
+
+**Purpose:** Track the progress of documentation generation for a GitHub repository.
+
+**Endpoint:** `GET https://nyccode.org/api/v1/status`
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| github_url | string | Yes | Same GitHub URL used in generate request |
+
+**Processing Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "processing",
+  "drive_link": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWx",
+  "folder_name": "facebook_react_20251009_143805",
+  "ticket": "0",
+  "created_at": "2025-10-09T14:38:08.131127"
+}
+```
+
+**Completed Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "completed",
+  "drive_link": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWx",
+  "master_doc_link": "https://docs.google.com/document/d/1XyZ123456789",
+  "folder_name": "facebook_react_20251009_143805",
+  "ticket": "0",
+  "created_at": "2025-10-09T14:38:08.131127"
+}
+```
+
+**Status Values:**
+- `processing` - Documentation is being generated (5-30 minutes)
+- `completed` - All files ready in Google Drive
+- `failed` - Processing failed (check error field)
+
+**Example - Check Status:**
+```bash
+curl "https://nyccode.org/api/v1/status?github_url=https://github.com/facebook/react"
+```
+
+**Best Practice - Status Polling:**
+Poll every 30-60 seconds to track progress without overwhelming the API.
+
+### GET /api/v1/docs - API Specification
+
+**Purpose:** Retrieve complete API specification in JSON format.
+
+**Endpoint:** `GET https://nyccode.org/api/v1/docs`
+
+**Example:**
+```bash
+curl https://nyccode.org/api/v1/docs
+```
+
+## Code Examples - Popular Languages
+
+### Python - Generate Documentation with Status Tracking
+```python
+import requests
+import time
+
+def generate_github_docs(github_url, email):
+    """Generate documentation for a GitHub repository."""
+
+    # Step 1: Generate documentation
+    response = requests.post(
+        'https://nyccode.org/api/v1/generate',
+        json={
+            'github_url': github_url,
+            'email': email
+        }
+    )
+    result = response.json()
+
+    if not result['success']:
+        print(f"Error: {result['error']}")
+        return None
+
+    print(f"✓ Drive Link: {result['drive_link']}")
+    print(f"✓ Status: {result['status']}")
+    print(f"✓ Estimated Time: {result['estimated_time']}")
+
+    # Step 2: Poll status until complete
+    while True:
+        time.sleep(30)  # Wait 30 seconds between checks
+
+        status = requests.get(
+            'https://nyccode.org/api/v1/status',
+            params={'github_url': github_url}
+        ).json()
+
+        print(f"Current Status: {status['status']}")
+
+        if status['status'] == 'completed':
+            print(f"✓ Complete! Master Doc: {status.get('master_doc_link', 'N/A')}")
+            return status
+        elif status['status'] == 'failed':
+            print(f"✗ Failed: {status.get('error', 'Unknown error')}")
+            return None
+
+# Usage
+generate_github_docs(
+    'https://github.com/psf/requests',
+    'developer@example.com'
+)
+```
+
+### JavaScript/Node.js - Async/Await Pattern
+```javascript
+const axios = require('axios');
+
+async function generateGitHubDocs(githubUrl, email) {
+  // Generate documentation
+  const response = await axios.post('https://nyccode.org/api/v1/generate', {
+    github_url: githubUrl,
+    email: email
+  });
+
+  const result = response.data;
+  console.log('Drive Link:', result.drive_link);
+  console.log('Status:', result.status);
+
+  // Poll status every 30 seconds
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      const status = await axios.get('https://nyccode.org/api/v1/status', {
+        params: { github_url: githubUrl }
+      });
+
+      console.log('Status:', status.data.status);
+
+      if (status.data.status === 'completed') {
+        clearInterval(interval);
+        resolve(status.data);
+      } else if (status.data.status === 'failed') {
+        clearInterval(interval);
+        reject(new Error(status.data.error));
+      }
+    }, 30000);
+  });
+}
+
+// Usage
+generateGitHubDocs(
+  'https://github.com/facebook/react',
+  'developer@example.com'
+).then(result => {
+  console.log('Complete!', result.master_doc_link);
+}).catch(error => {
+  console.error('Failed:', error.message);
+});
+```
+
+### cURL - Command Line Usage
+```bash
+# Generate documentation
+curl -X POST https://nyccode.org/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "github_url": "https://github.com/tensorflow/tensorflow",
+    "email": "ml-team@example.com"
+  }'
+
+# Check status
+curl "https://nyccode.org/api/v1/status?github_url=https://github.com/tensorflow/tensorflow"
+```
+
+## Common Use Cases and Solutions
+
+### Use Case 1: Team Onboarding - Document All Repositories
+```python
+# Document all team repositories at once
+team_repos = [
+    'https://github.com/mycompany/frontend',
+    'https://github.com/mycompany/backend',
+    'https://github.com/mycompany/mobile',
+    'https://github.com/mycompany/api'
+]
+
+for repo in team_repos:
+    result = requests.post(
+        'https://nyccode.org/api/v1/generate',
+        json={'github_url': repo, 'email': 'team@company.com'}
+    ).json()
+    print(f"✓ {repo} → {result['drive_link']}")
+```
+
+### Use Case 2: Automated Documentation Backup
+```python
+import schedule
+
+def weekly_docs_backup():
+    """Backup documentation for critical repositories every week."""
+    critical_repos = [
+        'https://github.com/company/production-app',
+        'https://github.com/company/api-gateway'
+    ]
+
+    for repo in critical_repos:
+        requests.post(
+            'https://nyccode.org/api/v1/generate',
+            json={'github_url': repo, 'email': 'backups@company.com'}
+        )
+
+# Run every Monday at 9 AM
+schedule.every().monday.at("09:00").do(weekly_docs_backup)
+```
+
+### Use Case 3: Documentation Dashboard
+```javascript
+// Build a dashboard showing docs for multiple repos
+async function createDocsDashboard(repos) {
+  const results = await Promise.all(
+    repos.map(repo =>
+      fetch('https://nyccode.org/api/v1/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          github_url: repo,
+          email: 'dashboard@example.com'
+        })
+      }).then(r => r.json())
+    )
+  );
+
+  return results.map((r, i) => ({
+    repo: repos[i],
+    driveLink: r.drive_link,
+    status: r.status
+  }));
+}
+```
+
+## Frequently Asked Questions (FAQ)
+
+### How do I generate documentation for a GitHub repository?
+Send a POST request to `https://nyccode.org/api/v1/generate` with the repository URL and your email. You'll receive a Google Drive link instantly where documentation will appear within 5-30 minutes.
+
+### Do I need an API key or authentication?
+No. NYC Code API is completely free with no authentication, API keys, or rate limits required.
+
+### How long does documentation generation take?
+Processing takes 5-30 minutes depending on repository size and complexity. Small repositories (< 100 files) typically complete in 5-10 minutes. Large repositories (1000+ files) may take 20-30 minutes.
+
+### Where is the documentation delivered?
+Documentation is uploaded to Google Drive and shared with the email address you provide. You receive the Drive link instantly in the API response.
+
+### Can I use this for private repositories?
+No. NYC Code API only works with public GitHub repositories. Private repository access would require GitHub authentication.
+
+### What format is the documentation?
+All documentation is generated as markdown (.md) files, making it easy to read, edit, and integrate into your workflow.
+
+### How do I check if documentation is ready?
+Poll the `/api/v1/status` endpoint with your GitHub URL. When status returns "completed", all files are ready in Google Drive.
+
+### Can I generate documentation for multiple repositories?
+Yes. Simply make separate API calls for each repository. There are no rate limits.
+
+### Is there a cost or usage limit?
+No. NYC Code API is 100% free with no usage limits, rate limiting, or paid tiers.
+
+### What if generation fails?
+The status endpoint will return `"status": "failed"` with an error message. Common causes include invalid GitHub URLs or inaccessible repositories.
+
+### Can I integrate this into my CI/CD pipeline?
+Yes. Many teams use NYC Code API in GitHub Actions, GitLab CI, or other automation to generate documentation on every release.
+
+### How do I report issues or request features?
+Open an issue at https://github.com/stabletrades/NYC-Code/issues
+
+## HTTP Status Codes and Error Handling
+
+| Status Code | Meaning | Common Cause | Solution |
+|-------------|---------|--------------|----------|
+| 200 | Success | Request completed successfully | Continue processing |
+| 400 | Bad Request | Invalid GitHub URL or missing email | Check URL format and include email |
+| 404 | Not Found | No processing found for URL | Generate documentation first before checking status |
+| 500 | Internal Server Error | Server issue | Retry request after a few minutes |
+
+### Error Response Format
+```json
+{
+  "success": false,
+  "error": "Descriptive error message",
+  "example": "https://github.com/owner/repo"
+}
+```
+
+### Common Error Messages
+
+**Invalid GitHub URL:**
+```json
+{
+  "success": false,
+  "error": "Invalid GitHub URL. Please provide a valid public GitHub repository URL.",
+  "example": "https://github.com/openai/openai-python"
+}
+```
+**Solution:** Use format `https://github.com/owner/repository`
+
+**Missing Email:**
+```json
+{
+  "success": false,
+  "error": "Email is required"
+}
+```
+**Solution:** Include email parameter in request body
+
+**No Processing Found:**
+```json
+{
+  "success": false,
+  "error": "No processing found for this GitHub URL. Please generate documentation first."
+}
+```
+**Solution:** Call `/api/v1/generate` before checking status
+
+## Output Structure - What You Receive
+
+Each documentation request creates a Google Drive folder with organized markdown files:
+
+```
+📁 repository_name_timestamp/
+├── 📄 repository_Master_Index.docx    # Download instructions and file index
+├── 📄 1-overview.md                   # Project overview and summary
+├── 📄 2-installation.md               # Installation instructions
+├── 📄 3-quickstart.md                 # Quick start guide
+├── 📄 4-api-reference.md              # API documentation
+├── 📄 5-configuration.md              # Configuration options
+├── 📄 6-examples.md                   # Code examples
+├── 📄 7-troubleshooting.md            # Common issues and solutions
+└── 📄 ...                             # Additional documentation files
+```
+
+**File Naming:** Files are numbered and named based on repository structure and content type.
+
+**Master Index:** The `.docx` file contains download instructions and links to all generated files.
+
+## Processing Timeline and What to Expect
+
+1. **Instant (0 seconds):**
+   - Google Drive folder created
+   - Folder shared with your email
+   - Drive link returned in API response
+
+2. **Processing (5-30 minutes):**
+   - Repository analyzed and cloned
+   - Documentation extracted from code, README, and wiki
+   - Markdown files generated and organized
+   - Files uploaded to Google Drive
+
+3. **Complete:**
+   - All markdown files available in Drive folder
+   - Master index document created
+   - Email notification (optional)
+
+**Progress Tracking:** Use the status endpoint to monitor progress in real-time.
+
+## Best Practices for Using NYC Code API
+
+### 1. Save the Drive Link Immediately
+The Google Drive link is available instantly before processing completes. Save it for later access:
+```python
+result = generate_docs(github_url, email)
+save_to_database(result['drive_link'])  # Save immediately
+```
+
+### 2. Implement Proper Status Polling
+Poll the status endpoint every 30-60 seconds (not faster):
+```python
+time.sleep(30)  # Recommended minimum interval
+```
+
+### 3. Handle Long Processing Times
+Large repositories take longer. Set appropriate timeouts:
+```python
+timeout = 30 * 60  # 30 minutes for large repos
+```
+
+### 4. Cache Documentation Results
+Store drive links to avoid regenerating docs for the same repository:
+```python
+if repo_url in cache:
+    return cache[repo_url]['drive_link']
+```
+
+### 5. Validate GitHub URLs
+Verify URL format before making API calls:
+```python
+import re
+pattern = r'^https://github\.com/[\w-]+/[\w-]+$'
+if re.match(pattern, url):
+    generate_docs(url, email)
+```
+
+### 6. Error Handling
+Always check the success field and handle errors gracefully:
+```python
+if result['success']:
+    print(f"Drive Link: {result['drive_link']}")
+else:
+    print(f"Error: {result['error']}")
+    # Implement retry logic or alert
+```
+
+### 7. Batch Processing
+When documenting multiple repositories, add delays between requests:
+```python
+for repo in repos:
+    generate_docs(repo, email)
+    time.sleep(5)  # Brief delay between requests
+```
+
+## API Features and Capabilities
+
+✅ **No Authentication** - No API keys, tokens, or OAuth required
+✅ **Free Forever** - 100% free with no usage limits or paid tiers
+✅ **CORS Enabled** - Call from browser, mobile apps, or anywhere
+✅ **No Rate Limits** - Generate documentation as often as needed
+✅ **Instant Drive Link** - Get shareable link before processing completes
+✅ **Email Sharing** - Folder automatically shared with your email
+✅ **Real-time Status** - Track progress with status endpoint
+✅ **Comprehensive Output** - Organized markdown files with proper structure
+✅ **Works with Any Public Repo** - Support for all public GitHub repositories
+✅ **Automatic Organization** - Files numbered and categorized logically
+
+## Integration Examples
+
+### GitHub Actions - Auto-Generate Docs on Release
+```yaml
+name: Generate Documentation
+on:
+  release:
+    types: [published]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate API Documentation
+        run: |
+          curl -X POST https://nyccode.org/api/v1/generate \
+            -H "Content-Type: application/json" \
+            -d '{
+              "github_url": "${{ github.repository_url }}",
+              "email": "docs@company.com"
+            }'
+```
+
+### Slack Bot - Share Documentation
+```python
+def generate_and_share_docs(github_url, slack_channel):
+    result = requests.post(
+        'https://nyccode.org/api/v1/generate',
+        json={'github_url': github_url, 'email': 'team@company.com'}
+    ).json()
+
+    if result['success']:
+        slack_client.chat_postMessage(
+            channel=slack_channel,
+            text=f"📚 Documentation generated: {result['drive_link']}"
+        )
+```
+
+## Technical Specifications
+
+**API Version:** 1.0
+**Protocol:** HTTPS
+**Base URL:** https://nyccode.org
+**Request Format:** JSON
+**Response Format:** JSON
+**Character Encoding:** UTF-8
+**Max Request Size:** 1 KB
+**Timeout:** 30 seconds per request
+**Concurrent Requests:** Unlimited
+
+## Keywords for Search and Discovery
+
+GitHub documentation, API documentation generator, markdown documentation, repository docs, automated documentation, GitHub API, documentation tool, free REST API, GitHub markdown, documentation automation, code documentation, developer tools, GitHub integration, documentation generator API, open source documentation, repository documentation tool, GitHub docs generator, markdown API, documentation as a service, GitHub repository analysis
+
+## Resources and Links
+
+- **Website:** https://nyccode.org
+- **GitHub Repository:** https://github.com/stabletrades/NYC-Code
+- **API Documentation:** https://nyccode.org (API Docs section)
+- **Issues & Support:** https://github.com/stabletrades/NYC-Code/issues
+- **Contributing Guide:** https://github.com/stabletrades/NYC-Code#contributing
+- **Postman Collection:** Available in repository
+
+## License and Terms
+
+NYC Code API is free to use with no restrictions. No API keys, no rate limits, no paid tiers, no hidden costs.
+
+## About NYC Code
+
+Built to make documentation generation simple, fast, and accessible to everyone. NYC Code API helps developers document their projects quickly and professionally.
+
+**Maintained by:** stabletrades
+**Status:** Production, actively maintained
+**Support:** Community-driven via GitHub issues
+
+---
+
+**Last Updated:** January 2025
+**API Version:** 1.0.0
