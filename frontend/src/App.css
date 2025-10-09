@@ -461,55 +461,362 @@ form {
   }
 }
 
-/* Responsive Design */
+/* Mobile-First Responsive Design */
+
+/* Tablet & Medium Devices (768px and below) */
 @media (max-width: 768px) {
+  .App {
+    padding: 15px;
+  }
+
   .container {
-    padding: 30px 25px;
+    padding: 35px 20px;
     border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.1);
   }
 
   h1 {
     font-size: 2.2rem;
+    letter-spacing: -0.3px;
   }
 
   h2 {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
   }
 
-  .time-number {
-    font-size: 2.8rem;
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 35px;
+  }
+
+  /* Mobile Touch Targets (minimum 48px) */
+  .btn {
+    padding: 16px 28px;
+    font-size: 0.95rem;
+    min-height: 48px;
+    letter-spacing: 0.5px;
+  }
+
+  .input-field {
+    padding: 14px 18px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 48px;
   }
 
   .api-docs-link, .nav-button {
     width: 100%;
     text-align: center;
+    min-height: 48px;
+    padding: 14px 24px;
   }
 
-  .btn {
-    padding: 14px 28px;
+  /* Remove hover effects on touch devices */
+  .btn-primary:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .nav-button:hover,
+  .api-docs-link:hover,
+  .drive-link:hover {
+    transform: none;
+  }
+
+  /* Simplify animations for performance */
+  .btn::before {
+    display: none;
+  }
+
+  /* Mobile Timer */
+  .timer-container {
+    padding: 25px 15px;
+  }
+
+  .countdown {
+    margin: 25px 0;
+    padding: 24px 35px;
+    min-width: 200px;
+  }
+
+  .time-number {
+    font-size: 3rem;
+  }
+
+  .time-label {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile Success Box */
+  .success-box {
+    padding: 25px 20px;
+  }
+
+  .success-box p {
+    font-size: 1rem;
+  }
+
+  .checkmark {
+    width: 70px;
+    height: 70px;
+  }
+
+  /* Mobile Drive Link */
+  .drive-link-box {
+    padding: 20px 15px;
+  }
+
+  .drive-link {
+    width: 100%;
+    text-align: center;
+    padding: 14px 20px;
+  }
+
+  .link-text {
+    font-size: 0.8rem;
+  }
+
+  /* Mobile Messages */
+  .message {
+    padding: 14px 16px;
     font-size: 0.95rem;
+  }
+
+  .repo-info {
+    margin-top: 25px;
+    padding-top: 20px;
+    font-size: 0.85rem;
+  }
+
+  /* Mobile Email Section */
+  .email-section {
+    margin-top: 25px;
+    padding-top: 25px;
+  }
+
+  .success-message {
+    font-size: 1.1rem;
   }
 }
 
+/* Mobile & Small Devices (480px and below) */
 @media (max-width: 480px) {
+  .App {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 25px 18px;
+    border-radius: 16px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    margin-bottom: 18px;
+  }
+
+  h3 {
+    font-size: 1rem;
+    margin: 20px 0 15px 0;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+
+  /* Extra padding for thumb-friendly interactions */
+  .btn {
+    padding: 15px 24px;
+    font-size: 0.9rem;
+    letter-spacing: 0.4px;
+  }
+
+  .input-field {
+    padding: 13px 16px;
+    font-size: 16px;
+  }
+
+  /* Compact Timer for Small Screens */
+  .timer-container {
+    padding: 20px 10px;
+  }
+
+  .countdown {
+    min-width: 160px;
+    padding: 20px 28px;
+    margin: 20px 0;
+  }
+
+  .time-number {
+    font-size: 2.5rem;
+  }
+
+  .time-label {
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+  }
+
+  .timer-text {
+    font-size: 1rem;
+    margin: 20px 0;
+  }
+
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border-width: 4px;
+  }
+
+  /* Compact Success Box */
+  .success-box {
+    padding: 20px 15px;
+    border-radius: 14px;
+  }
+
+  .success-box p {
+    font-size: 0.95rem;
+  }
+
+  .checkmark {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+  }
+
+  /* Mobile Drive Link */
+  .drive-link-box {
+    padding: 18px 12px;
+  }
+
+  .drive-link-box p {
+    font-size: 0.9rem;
+  }
+
+  .drive-link {
+    font-size: 0.9rem;
+    padding: 12px 18px;
+  }
+
+  .link-text {
+    font-size: 0.75rem;
+  }
+
+  /* Mobile Messages */
+  .message {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    margin-top: 15px;
+  }
+
+  .info-message {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  .success-message {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  /* Mobile Email Section */
+  .email-section {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .email-info {
+    margin-top: 15px;
+    font-size: 0.9rem;
+  }
+
+  /* Mobile Repo Info */
+  .repo-info {
+    margin-top: 20px;
+    padding-top: 18px;
+    font-size: 0.8rem;
+  }
+
+  /* API Docs Section */
+  .api-docs-section {
+    margin-top: 25px;
+    padding-top: 25px;
+  }
+
+  .api-docs-link {
+    font-size: 0.9rem;
+    padding: 12px 24px;
+  }
+
+  .nav-button {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+
+  .nav-header {
+    margin-bottom: 20px;
+  }
+}
+
+/* Landscape Orientation on Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
   .container {
     padding: 25px 20px;
+    max-width: 90%;
   }
 
   h1 {
     font-size: 1.8rem;
+    margin-bottom: 5px;
   }
 
   .subtitle {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
   }
 
   .countdown {
-    min-width: 180px;
-    padding: 20px 30px;
+    padding: 18px 30px;
+    min-width: 150px;
   }
 
   .time-number {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
+  }
+
+  .time-label {
+    font-size: 0.8rem;
+  }
+
+  .timer-container {
+    padding: 20px 15px;
+  }
+
+  .checkmark {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Reduce Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn::before {
+    display: none;
   }
 }

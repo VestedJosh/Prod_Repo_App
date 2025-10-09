@@ -452,79 +452,434 @@
   color: #718096;
 }
 
-/* Responsive Design */
+/* Mobile-First Responsive Design */
+
+/* Tablet & Medium Devices (768px and below) */
 @media (max-width: 768px) {
+  .api-docs {
+    padding: 30px 15px;
+  }
+
   .api-container {
-    padding: 40px 30px;
+    padding: 40px 25px;
     border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.1);
   }
 
   .api-docs h1 {
     font-size: 2.2rem;
+    letter-spacing: -0.3px;
+  }
+
+  .api-subtitle {
+    font-size: 1.05rem;
+    margin-bottom: 40px;
+  }
+
+  .api-section {
+    margin: 40px 0;
+    padding: 30px 0;
   }
 
   .api-section h2 {
     font-size: 1.6rem;
+    margin-bottom: 20px;
   }
 
+  .api-section h3 {
+    font-size: 1.2rem;
+    margin: 25px 0 15px 0;
+  }
+
+  .api-section h4 {
+    font-size: 1rem;
+  }
+
+  .api-section p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  /* Mobile Touch Targets */
+  .copy-button {
+    width: 100%;
+    text-align: center;
+    min-height: 48px;
+    padding: 14px 24px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .copy-button:hover,
+  .endpoint:hover,
+  .timeline-item:hover,
+  .example-variations li:hover {
+    transform: none;
+  }
+
+  /* Mobile Timeline */
   .timeline {
     flex-direction: column;
+    gap: 18px;
   }
 
+  .timeline-item {
+    padding: 20px;
+  }
+
+  .timeline-item strong {
+    font-size: 1.1rem;
+  }
+
+  .timeline-item p {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile Code Blocks */
   .code-block {
     padding: 18px;
+    margin: 18px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .code-block pre {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  /* Mobile Endpoints */
+  .endpoint {
+    padding: 20px 18px;
+    margin: 20px 0;
+  }
+
+  .method {
+    font-size: 0.8rem;
+    padding: 5px 14px;
+    margin-bottom: 10px;
+  }
+
+  /* Mobile LLM Section */
+  .llm-prompt-section {
+    padding: 30px 20px !important;
+    margin: 30px 0 !important;
+  }
+
+  .llm-prompt-section h2 {
+    font-size: 1.6rem;
+  }
+
+  .llm-subtitle {
+    font-size: 0.95rem;
   }
 
   .llm-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 18px;
   }
 
-  .copy-button {
-    width: 100%;
-    text-align: center;
+  .llm-instructions {
+    max-height: 500px;
+  }
+
+  .llm-instructions pre {
+    font-size: 0.82rem !important;
+  }
+
+  /* Mobile Tables */
+  .param-details {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .param-details table {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    min-width: 600px;
   }
 
   .param-details td {
-    padding: 10px;
+    padding: 10px 8px;
+  }
+
+  .api-specs table {
+    font-size: 0.85rem;
+  }
+
+  .api-specs td {
+    padding: 12px 10px;
+  }
+
+  /* Mobile Note Boxes */
+  .example-note,
+  .response-note {
+    padding: 15px 18px;
+    margin: 18px 0;
+  }
+
+  .example-variations {
+    padding: 20px 15px;
+    margin: 20px 0;
   }
 
   .example-variations li {
+    font-size: 0.88rem;
+    padding: 12px 15px;
+  }
+
+  .status-list li {
+    padding: 12px 0;
     font-size: 0.9rem;
   }
 
-  .endpoint {
-    padding: 20px;
+  .status-list code,
+  .endpoint code {
+    font-size: 0.85rem;
+    padding: 3px 8px;
   }
 }
 
+/* Mobile & Small Devices (480px and below) */
 @media (max-width: 480px) {
+  .api-docs {
+    padding: 25px 10px;
+  }
+
   .api-container {
-    padding: 30px 20px;
+    padding: 30px 18px;
+    border-radius: 16px;
   }
 
   .api-docs h1 {
     font-size: 1.8rem;
+    margin-bottom: 8px;
   }
 
   .api-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+    line-height: 1.5;
   }
 
   .api-section {
-    margin: 35px 0;
-    padding: 30px 0;
+    margin: 30px 0;
+    padding: 25px 0;
   }
 
+  .api-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .api-section h3 {
+    font-size: 1.05rem;
+    margin: 20px 0 12px 0;
+  }
+
+  .api-section h4 {
+    font-size: 0.95rem;
+    margin: 18px 0 10px 0;
+  }
+
+  .api-section p {
+    font-size: 0.9rem;
+  }
+
+  /* Compact Code Blocks */
+  .code-block {
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  .code-block pre {
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  /* Compact Endpoints */
+  .endpoint {
+    padding: 18px 15px;
+    margin: 18px 0;
+  }
+
+  .endpoint ul {
+    padding-left: 18px;
+  }
+
+  .endpoint li {
+    font-size: 0.88rem;
+    margin: 8px 0;
+  }
+
+  .method {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    display: block;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  /* Compact LLM Section */
   .llm-prompt-section {
-    padding: 25px !important;
+    padding: 22px 15px !important;
+    margin: 25px 0 !important;
+    border-radius: 14px;
+  }
+
+  .llm-prompt-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+
+  .llm-subtitle {
+    font-size: 0.88rem;
+    margin-bottom: 18px !important;
+  }
+
+  .llm-instructions {
+    max-height: 400px;
+    border-radius: 10px;
+  }
+
+  .llm-instructions pre {
+    font-size: 0.78rem !important;
+    padding: 12px;
+  }
+
+  .copy-button {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+
+  /* Compact Timeline */
+  .timeline {
+    gap: 15px;
+  }
+
+  .timeline-item {
+    padding: 18px 15px;
+  }
+
+  .timeline-item strong {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .timeline-item p {
+    font-size: 0.85rem;
+  }
+
+  /* Compact Tables */
+  .param-details table {
+    font-size: 0.78rem;
+    min-width: 550px;
+  }
+
+  .param-details td {
+    padding: 8px 6px;
+  }
+
+  .api-specs td {
+    padding: 10px 8px;
+    font-size: 0.82rem;
+  }
+
+  .api-specs td:first-child {
+    width: 140px;
+  }
+
+  /* Compact Note Boxes */
+  .example-note,
+  .response-note {
+    padding: 12px 15px;
+    font-size: 0.88rem;
+  }
+
+  .example-variations {
+    padding: 18px 12px;
+  }
+
+  .example-variations h4 {
+    font-size: 0.95rem;
+  }
+
+  .example-variations li {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+  }
+
+  .status-list li {
+    padding: 10px 0;
+    font-size: 0.85rem;
+  }
+
+  .status-list code,
+  .endpoint code {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+  }
+}
+
+/* Landscape Orientation on Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .api-docs {
+    padding: 20px 15px;
+  }
+
+  .api-container {
+    padding: 30px 20px;
+    max-width: 95%;
+  }
+
+  .api-docs h1 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+  }
+
+  .api-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+  }
+
+  .api-section {
+    margin: 25px 0;
+    padding: 20px 0;
+  }
+
+  .api-section h2 {
+    font-size: 1.4rem;
+  }
+
+  .code-block {
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .llm-instructions {
+    max-height: 300px;
+  }
+
+  .timeline {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .timeline-item {
+    flex: 0 0 calc(50% - 10px);
+    padding: 15px;
+  }
+}
+
+/* Reduce Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .api-docs,
+  .endpoint,
+  .timeline-item,
+  .example-variations li,
+  .copy-button {
+    animation: none !important;
+    transition: none !important;
   }
 }
