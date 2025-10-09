@@ -52,24 +52,23 @@
 }
 
 .api-docs-link {
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 14px 32px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid #667eea;
   border-radius: 12px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .api-docs-link:hover {
-  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
-  border-color: white;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  border-color: #764ba2;
 }
 
 /* Main Container */
