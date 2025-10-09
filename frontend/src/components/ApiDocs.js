@@ -27,13 +27,16 @@ import json
 
 # Get user input
 github_url = input("Enter GitHub repository URL: ")
-email = input("Enter your email (optional, press Enter to skip): ")
+email = input("Enter your email: ")
 
 # Call the API
 print("\\nGenerating documentation...")
 response = requests.post(
     'https://nyccode.org/api/v1/generate',
-    json={'github_url': github_url}
+    json={
+        'github_url': github_url,
+        'email': email
+    }
 )
 
 result = response.json()
@@ -44,12 +47,14 @@ if result.get('success'):
     # Save to file
     with open('nyc_code_result.txt', 'w') as f:
         f.write(f"GitHub Repository: {github_url}\\n")
+        f.write(f"Email: {email}\\n")
         f.write(f"Drive Link: {drive_link}\\n")
         f.write(f"Status: {result['status']}\\n")
         f.write(f"Estimated Time: {result['estimated_time']}\\n")
 
     print(f"\\n✓ Success! Drive link saved to 'nyc_code_result.txt'")
     print(f"\\nDrive Link: {drive_link}")
+    print(f"Email shared with: {email}")
     print(f"Status: {result['status']}")
     print(f"Estimated Time: {result['estimated_time']}")
 else:
@@ -71,7 +76,7 @@ const rl = readline.createInterface({
 });
 
 rl.question('Enter GitHub repository URL: ', (github_url) => {
-    rl.question('Enter your email (optional, press Enter to skip): ', (email) => {
+    rl.question('Enter your email: ', (email) => {
         rl.close();
 
         console.log('\\nGenerating documentation...');
@@ -79,12 +84,16 @@ rl.question('Enter GitHub repository URL: ', (github_url) => {
         fetch('https://nyccode.org/api/v1/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ github_url })
+            body: JSON.stringify({
+                github_url: github_url,
+                email: email
+            })
         })
         .then(res => res.json())
         .then(result => {
             if (result.success) {
                 const output = \`GitHub Repository: \${github_url}
+Email: \${email}
 Drive Link: \${result.drive_link}
 Status: \${result.status}
 Estimated Time: \${result.estimated_time}\`;
@@ -93,6 +102,7 @@ Estimated Time: \${result.estimated_time}\`;
 
                 console.log('\\n✓ Success! Drive link saved to nyc_code_result.txt');
                 console.log(\`\\nDrive Link: \${result.drive_link}\`);
+                console.log(\`Email shared with: \${email}\`);
                 console.log(\`Status: \${result.status}\`);
                 console.log(\`Estimated Time: \${result.estimated_time}\`);
             } else {
@@ -113,9 +123,10 @@ Create a file called "nyc_code_generator.sh" (Linux/Mac) or "nyc_code_generator.
 For Linux/Mac (.sh):
 #!/bin/bash
 read -p "Enter GitHub repository URL: " GITHUB_URL
+read -p "Enter your email: " EMAIL
 curl -X POST https://nyccode.org/api/v1/generate \\
   -H "Content-Type: application/json" \\
-  -d "{\\"github_url\\": \\"\$GITHUB_URL\\"}" \\
+  -d "{\\"github_url\\": \\"\$GITHUB_URL\\", \\"email\\": \\"\$EMAIL\\"}" \\
   -o nyc_code_result.json
 echo "Result saved to nyc_code_result.json"
 cat nyc_code_result.json
@@ -123,7 +134,8 @@ cat nyc_code_result.json
 For Windows (.bat):
 @echo off
 set /p GITHUB_URL="Enter GitHub repository URL: "
-curl -X POST https://nyccode.org/api/v1/generate -H "Content-Type: application/json" -d "{\\"github_url\\": \\"%GITHUB_URL%\\"}" -o nyc_code_result.json
+set /p EMAIL="Enter your email: "
+curl -X POST https://nyccode.org/api/v1/generate -H "Content-Type: application/json" -d "{\\"github_url\\": \\"%GITHUB_URL%\\", \\"email\\": \\"%EMAIL%\\"}" -o nyc_code_result.json
 echo Result saved to nyc_code_result.json
 type nyc_code_result.json
 pause
@@ -224,13 +236,16 @@ Always remind the user:
 
           <div className="example-note">
             <strong>Try it now:</strong> Copy this command and run it in your terminal.
-            Replace the GitHub URL with any public repository you want to document.
+            Replace the GitHub URL and email with your own values.
           </div>
 
           <div className="code-block">
             <pre>{`curl -X POST https://nyccode.org/api/v1/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"github_url": "https://github.com/psf/requests"}'`}</pre>
+  -d '{
+    "github_url": "https://github.com/openai/openai-python",
+    "email": "user@example.com"
+  }'`}</pre>
           </div>
 
           <div className="example-variations">
@@ -249,12 +264,13 @@ Always remind the user:
 
           <div className="endpoint">
             <h3><span className="method post">POST</span> /api/v1/generate</h3>
-            <p>Generate markdown documentation for a GitHub repository</p>
+            <p>Generate markdown documentation for a GitHub repository and share it with your email</p>
 
             <h4>Request Body:</h4>
             <div className="code-block">
               <pre>{`{
-  "github_url": "https://github.com/owner/repository"
+  "github_url": "https://github.com/owner/repository",
+  "email": "user@example.com"
 }`}</pre>
             </div>
 
@@ -266,7 +282,13 @@ Always remind the user:
                     <td><code>github_url</code></td>
                     <td>string</td>
                     <td>required</td>
-                    <td>Full GitHub repository URL (e.g., https://github.com/psf/requests)</td>
+                    <td>Full GitHub repository URL (e.g., https://github.com/openai/openai-python)</td>
+                  </tr>
+                  <tr>
+                    <td><code>email</code></td>
+                    <td>string</td>
+                    <td>required</td>
+                    <td>Email address to share the documentation folder with (e.g., user@example.com)</td>
                   </tr>
                 </tbody>
               </table>
@@ -276,7 +298,10 @@ Always remind the user:
             <div className="code-block">
               <pre>{`curl -X POST https://nyccode.org/api/v1/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"github_url": "https://github.com/psf/requests"}'`}</pre>
+  -d '{
+    "github_url": "https://github.com/openai/openai-python",
+    "email": "user@example.com"
+  }'`}</pre>
             </div>
 
             <h4>Response:</h4>
@@ -369,20 +394,26 @@ import time
 # Generate documentation
 response = requests.post(
     'https://nyccode.org/api/v1/generate',
-    json={'github_url': 'https://github.com/psf/requests'}
+    json={
+        'github_url': 'https://github.com/openai/openai-python',
+        'email': 'user@example.com'
+    }
 )
 result = response.json()
 print(f"Drive Link: {result['drive_link']}")
+print(f"Status: {result['status']}")
 
 # Poll status
+github_url = 'https://github.com/openai/openai-python'
 while True:
     status = requests.get(
         'https://nyccode.org/api/v1/status',
-        params={'github_url': 'https://github.com/psf/requests'}
+        params={'github_url': github_url}
     ).json()
 
     if status['status'] == 'completed':
         print("Complete!")
+        print(f"Master Doc: {status.get('master_doc_link', 'N/A')}")
         break
 
     time.sleep(30)  # Check every 30 seconds`}</pre>
@@ -391,16 +422,22 @@ while True:
           <h3>JavaScript</h3>
           <div className="code-block">
             <pre>{`async function generateDocs() {
+  const githubUrl = 'https://github.com/openai/openai-python';
+  const email = 'user@example.com';
+
+  // Generate documentation
   const response = await fetch('https://nyccode.org/api/v1/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      github_url: 'https://github.com/psf/requests'
+      github_url: githubUrl,
+      email: email
     })
   });
 
   const data = await response.json();
   console.log('Drive Link:', data.drive_link);
+  console.log('Status:', data.status);
 
   // Poll status every 30 seconds
   const interval = setInterval(async () => {
@@ -410,10 +447,13 @@ while True:
 
     if (status.status === 'completed') {
       console.log('Complete!');
+      console.log('Master Doc:', status.master_doc_link || 'N/A');
       clearInterval(interval);
     }
   }, 30000);
-}`}</pre>
+}
+
+generateDocs();`}</pre>
           </div>
         </section>
 
