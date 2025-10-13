@@ -316,10 +316,15 @@ def api_v1_generate():
 
         print(f"[API v1] Folder created: {drive_link}")
 
-        # Share folder with user's email if provided
+        # Share folder with user's email if provided (non-blocking)
         if email and email != 'API' and '@' in email:
-            print(f"[API v1] Sharing folder with {email}...")
-            share_with_email(folder_id, email)
+            try:
+                print(f"[API v1] Sharing folder with {email}...")
+                share_with_email(folder_id, email)
+                print(f"[API v1] Successfully shared with {email}")
+            except Exception as share_error:
+                print(f"[API v1] Warning: Failed to share with {email}: {str(share_error)}")
+                # Continue processing even if sharing fails
 
         # Find or create tracking sheet
         tracking_sheet = find_or_create_tracking_sheet(admin_folder_id)
