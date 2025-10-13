@@ -28,11 +28,15 @@ def run_deepwiki_scraper(deepwiki_url, output_dir):
     Returns the output directory where markdown files are saved
     """
     try:
-        # Path to the deepwiki_to_md package
-        deepwiki_path = r"C:\Users\jgott\OneDrive\Desktop\deepwiki_to_md"
+        # Path to the deepwiki_to_md package (in Docker container or local)
+        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        deepwiki_path = os.path.join(backend_dir, 'deepwiki_to_md')
+
+        # Fallback to absolute path if relative doesn't exist
+        if not os.path.exists(deepwiki_path):
+            deepwiki_path = '/app/deepwiki_to_md'
 
         # Get absolute path for output directory
-        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         abs_output_dir = os.path.join(backend_dir, output_dir)
 
         # Run the scraper using Python module
