@@ -5,7 +5,7 @@ import os
 import threading
 from services.doc_generator import generate_documentation
 from services.storage import save_to_csv, save_markdown, sanitize_filename
-from services.google_drive import test_connection, upload_file_to_drive, find_or_create_folder, upload_folder_structure, share_with_email, find_or_create_tracking_sheet, append_to_sheet, create_master_doc, update_sheet_status, find_row_by_drive_link
+from services.google_drive import test_connection, upload_file_to_drive, find_or_create_folder, upload_folder_structure, share_with_email, find_or_create_tracking_sheet, append_to_sheet, create_master_doc, update_sheet_status, find_row_by_drive_link, check_and_update_downloads
 import queue
 import time
 
@@ -127,6 +127,11 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
 
         processing_status[github_url]['status'] = 'completed'
         print(f"[Queue Worker] Processing completed for: {github_url}")
+
+        # Check download status for all completed folders
+        print(f"[Queue Worker] Checking download status for all folders...")
+        download_check_result = check_and_update_downloads(sheet_id)
+        print(f"[Queue Worker] Download check updated {download_check_result.get('updated_count', 0)} folders")
 
         # Clean up: Delete markdown files and folder after successful upload
         print(f"[Queue Worker] Cleaning up local files...")
@@ -279,6 +284,7 @@ def api_v1_generate():
     try:
         data = request.get_json()
         github_url = data.get('github_url')
+        email = data.get('email', 'API')
 
         if not github_url or 'github.com' not in github_url:
             return jsonify({
@@ -286,7 +292,7 @@ def api_v1_generate():
                 'error': 'Invalid GitHub URL'
             }), 400
 
-        print(f"[API v1] Creating folder for: {github_url}")
+        print(f"[API v1] Creating folder for: {github_url} (Email: {email})")
 
         # Extract repo info
         import re
@@ -310,13 +316,18 @@ def api_v1_generate():
 
         print(f"[API v1] Folder created: {drive_link}")
 
+        # Share folder with user's email if provided
+        if email and email != 'API' and '@' in email:
+            print(f"[API v1] Sharing folder with {email}...")
+            share_with_email(folder_id, email)
+
         # Find or create tracking sheet
         tracking_sheet = find_or_create_tracking_sheet(admin_folder_id)
         sheet_id = tracking_sheet['sheet_id']
 
         # Add row to tracking sheet with status "Processing"
         timestamp_iso = datetime.now().isoformat()
-        sheet_result = append_to_sheet(sheet_id, 'API', github_url, drive_link, timestamp_iso, status='Processing')
+        sheet_result = append_to_sheet(sheet_id, email, github_url, drive_link, timestamp_iso, status='Processing')
         row_number = sheet_result['row_number']
         ticket = sheet_result['ticket']
 
