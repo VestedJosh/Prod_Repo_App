@@ -461,6 +461,62 @@ form {
   }
 }
 
+/* Status Info Section */
+.status-info {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  padding: 20px 25px;
+  border-radius: 14px;
+  margin-top: 25px;
+  border: 2px solid #ffd966;
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.1);
+  animation: fadeInUp 0.6s ease-in;
+}
+
+.status-info p {
+  color: #856404;
+  margin: 8px 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.status-info strong {
+  color: #664d03;
+  font-weight: 700;
+}
+
+/* Completion Info Section */
+.completion-info {
+  background: white;
+  padding: 20px 25px;
+  border-radius: 14px;
+  margin-top: 25px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.completion-info p {
+  color: #2d3748;
+  margin: 10px 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.completion-info strong {
+  color: #1a202c;
+  font-weight: 700;
+}
+
+/* Info Text */
+.info-text {
+  text-align: center;
+  color: #718096;
+  font-size: 0.9rem;
+  margin-top: 20px;
+  line-height: 1.6;
+  padding: 0 10px;
+}
+
 /* Mobile-First Responsive Design */
 
 /* Tablet & Medium Devices (768px and below) */
@@ -600,6 +656,29 @@ form {
 
   .success-message {
     font-size: 1.1rem;
+  }
+
+  /* Mobile Status Info */
+  .status-info {
+    padding: 18px 20px;
+  }
+
+  .status-info p {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile Completion Info */
+  .completion-info {
+    padding: 18px 20px;
+  }
+
+  .completion-info p {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile Info Text */
+  .info-text {
+    font-size: 0.85rem;
   }
 }
 
@@ -765,6 +844,30 @@ form {
 
   .nav-header {
     margin-bottom: 20px;
+  }
+
+  /* Small Mobile Status Info */
+  .status-info {
+    padding: 15px 18px;
+  }
+
+  .status-info p {
+    font-size: 0.85rem;
+  }
+
+  /* Small Mobile Completion Info */
+  .completion-info {
+    padding: 15px 18px;
+  }
+
+  .completion-info p {
+    font-size: 0.85rem;
+  }
+
+  /* Small Mobile Info Text */
+  .info-text {
+    font-size: 0.8rem;
+    margin-top: 15px;
   }
 }
 
