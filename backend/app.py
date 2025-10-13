@@ -5,7 +5,7 @@ import os
 import threading
 from services.doc_generator import generate_documentation
 from services.storage import save_to_csv, save_markdown, sanitize_filename
-from services.google_drive import test_connection, upload_file_to_drive, find_or_create_folder, upload_folder_structure, share_with_email, find_or_create_tracking_sheet, append_to_sheet, create_master_doc, update_sheet_status, find_row_by_drive_link, check_and_update_downloads
+from services.google_drive import test_connection, upload_file_to_drive, find_or_create_folder, upload_folder_structure, share_with_email, find_or_create_tracking_sheet, append_to_sheet, create_master_doc, update_sheet_status, find_row_by_drive_link
 import queue
 import time
 
@@ -127,11 +127,6 @@ def process_single_repo(github_url, folder_id, repo_name, sheet_id, row_number):
 
         processing_status[github_url]['status'] = 'completed'
         print(f"[Queue Worker] Processing completed for: {github_url}")
-
-        # Check download status for all completed folders
-        print(f"[Queue Worker] Checking download status for all folders...")
-        download_check_result = check_and_update_downloads(sheet_id)
-        print(f"[Queue Worker] Download check updated {download_check_result.get('updated_count', 0)} folders")
 
         # Clean up: Delete markdown files and folder after successful upload
         print(f"[Queue Worker] Cleaning up local files...")
