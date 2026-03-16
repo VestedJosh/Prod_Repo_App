@@ -3,6 +3,7 @@ from flask_cors import CORS
 from datetime import datetime
 import os
 import threading
+import requests
 from services.doc_generator import generate_documentation
 from services.storage import save_to_csv, save_markdown, sanitize_filename
 from services.google_drive import test_connection, upload_file_to_drive, find_or_create_folder, upload_folder_structure, share_with_email, find_or_create_tracking_sheet, append_to_sheet, create_master_doc, update_sheet_status, find_row_by_drive_link
@@ -18,7 +19,9 @@ CORS(app, resources={
             "http://localhost:3000",     # Local development
             "https://*.vercel.app",       # Vercel preview deployments
             "https://www.nyccode.org",    # Production frontend
-            "https://nyccode.org"         # Without www
+            "https://nyccode.org",        # Without www
+            "https://nycbot.org",         # Billing dashboard
+            "https://www.nycbot.org"      # Billing dashboard with www
         ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
@@ -524,6 +527,207 @@ def share_docs():
             'success': False,
             'error': str(e)
         }), 500
+
+# =============================================================================
+# Stripe Billing API Routes
+# =============================================================================
+
+STRIPE_API = "https://api.stripe.com/v1"
+
+def stripe_headers():
+    key = os.environ.get('STRIPE_SECRET_KEY', '')
+    return {"Authorization": f"Bearer {key}"}
+
+def stripe_get(path, params=None):
+    url = f"{STRIPE_API}{path}"
+    resp = requests.get(url, headers=stripe_headers(), params=params)
+    return resp.json()
+
+def stripe_post(path, data=None):
+    url = f"{STRIPE_API}{path}"
+    resp = requests.post(url, headers=stripe_headers(), data=data)
+    return resp.json()
+
+@app.route('/api/stripe/customer', methods=['GET'])
+def stripe_customer():
+    """Get customer dashboard data from Stripe"""
+    customer_id = request.args.get('id')
+    if not customer_id:
+        return jsonify({'error': 'Customer ID required'}), 400
+
+    try:
+        customer = stripe_get(f"/customers/{customer_id}", {"expand[]": "subscriptions"})
+        if customer.get('error'):
+            return jsonify({'error': customer['error'].get('message', 'Customer not found')}), 404
+
+        invoices_data = stripe_get("/invoices", {"customer": customer_id, "limit": "20"})
+        pm_data = stripe_get("/payment_methods", {"customer": customer_id, "type": "card", "limit": "1"})
+
+        invoices = invoices_data.get('data', [])
+
+        # Balance due
+        open_invoices = [inv for inv in invoices if inv.get('status') in ('open', 'uncollectible')]
+        balance_due = sum(inv.get('amount_due', 0) for inv in open_invoices) / 100
+
+        # Due date
+        due_invoices = sorted([inv for inv in open_invoices if inv.get('due_date')], key=lambda x: x['due_date'])
+        due_date = None
+        days_until_due = None
+        if due_invoices:
+            due_date = datetime.utcfromtimestamp(due_invoices[0]['due_date']).isoformat() + 'Z'
+            days_until_due = max(0, (datetime.utcfromtimestamp(due_invoices[0]['due_date']) - datetime.utcnow()).days)
+
+        # Account status
+        account_status = 'active'
+        if any(inv.get('status') == 'uncollectible' for inv in open_invoices):
+            account_status = 'suspended'
+        elif balance_due > 0:
+            account_status = 'payment_due'
+
+        # Services from subscriptions
+        services = []
+        subscriptions = customer.get('subscriptions', {}).get('data', [])
+        for sub in subscriptions:
+            for item in sub.get('items', {}).get('data', []):
+                price = item.get('price', {})
+                product_id = price.get('product', '')
+                product = stripe_get(f"/products/{product_id}")
+                retail_price = float(product.get('metadata', {}).get('retail_price', 0)) or (price.get('unit_amount', 0) / 100)
+                your_price = (price.get('unit_amount', 0)) / 100
+                sub_status = 'active' if sub.get('status') == 'active' else ('payment_due' if sub.get('status') == 'past_due' else 'suspended')
+                services.append({
+                    'name': product.get('name', 'Service'),
+                    'plan': price.get('nickname') or f"${your_price:.2f}/mo",
+                    'retailPrice': retail_price,
+                    'yourPrice': your_price,
+                    'status': sub_status,
+                })
+
+        # Recent activity
+        recent_activity = []
+        for inv in invoices[:10]:
+            status_map = {'paid': 'success', 'open': 'pending', 'uncollectible': 'failed'}
+            desc_map = {'paid': 'Payment received', 'open': 'Invoice pending', 'uncollectible': 'Payment failed'}
+            recent_activity.append({
+                'id': inv.get('id', ''),
+                'type': 'payment' if inv.get('status') == 'paid' else 'invoice',
+                'description': desc_map.get(inv.get('status'), f"Invoice {inv.get('status')}"),
+                'amount': (inv.get('amount_due', 0)) / 100,
+                'date': datetime.utcfromtimestamp(inv.get('created', 0)).isoformat() + 'Z',
+                'status': status_map.get(inv.get('status'), 'info'),
+            })
+
+        # Payment method
+        pm_list = pm_data.get('data', [])
+        payment_method = None
+        if pm_list:
+            card = pm_list[0].get('card', {})
+            payment_method = {
+                'brand': card.get('brand', 'unknown'),
+                'last4': card.get('last4', '****'),
+                'expMonth': card.get('exp_month', 0),
+                'expYear': card.get('exp_year', 0),
+            }
+
+        autopay = any(sub.get('collection_method') == 'charge_automatically' for sub in subscriptions)
+        total_savings = sum(s['retailPrice'] - s['yourPrice'] for s in services)
+        retail_name = customer.get('metadata', {}).get('retail_comparison', 'retail pricing')
+
+        return jsonify({
+            'customerName': customer.get('name') or customer.get('email') or 'Customer',
+            'customerId': customer.get('id'),
+            'balanceDue': balance_due,
+            'dueDate': due_date,
+            'daysUntilDue': days_until_due,
+            'accountStatus': account_status,
+            'services': services,
+            'recentActivity': recent_activity,
+            'paymentMethod': payment_method,
+            'autopayEnabled': autopay,
+            'totalRetailSavings': total_savings,
+            'retailComparisonName': retail_name,
+        })
+
+    except Exception as e:
+        print(f"[Stripe Customer] Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stripe/checkout', methods=['POST'])
+def stripe_checkout():
+    """Create a checkout session or redirect to open invoice"""
+    try:
+        data = request.get_json()
+        customer_id = data.get('customerId')
+        amount = data.get('amount', 0)
+
+        if not customer_id:
+            return jsonify({'error': 'Customer ID required'}), 400
+
+        # Check for open invoices first
+        open_inv = stripe_get("/invoices", {"customer": customer_id, "status": "open", "limit": "1"})
+        inv_list = open_inv.get('data', [])
+        if inv_list and inv_list[0].get('hosted_invoice_url'):
+            return jsonify({'url': inv_list[0]['hosted_invoice_url']})
+
+        # Fallback: create checkout session
+        origin = request.headers.get('Origin', 'https://nycbot.org')
+        session = stripe_post("/checkout/sessions", {
+            "customer": customer_id,
+            "payment_method_types[0]": "card",
+            "mode": "payment",
+            "line_items[0][price_data][currency]": "usd",
+            "line_items[0][price_data][product_data][name]": "Account Balance Payment",
+            "line_items[0][price_data][unit_amount]": str(int(amount * 100)),
+            "line_items[0][quantity]": "1",
+            "success_url": f"{origin}/tenant-billing?id={customer_id}&payment=success",
+            "cancel_url": f"{origin}/tenant-billing?id={customer_id}&payment=cancelled",
+        })
+
+        return jsonify({'url': session.get('url')})
+
+    except Exception as e:
+        print(f"[Stripe Checkout] Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stripe/portal', methods=['POST'])
+def stripe_portal():
+    """Create a Stripe billing portal session"""
+    try:
+        data = request.get_json()
+        customer_id = data.get('customerId')
+
+        if not customer_id:
+            return jsonify({'error': 'Customer ID required'}), 400
+
+        origin = request.headers.get('Origin', 'https://nycbot.org')
+        session = stripe_post("/billing_portal/sessions", {
+            "customer": customer_id,
+            "return_url": f"{origin}/tenant-billing?id={customer_id}",
+        })
+
+        if session.get('error'):
+            return jsonify({'error': session['error'].get('message', 'Portal error')}), 400
+
+        return jsonify({'url': session.get('url')})
+
+    except Exception as e:
+        print(f"[Stripe Portal] Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    """Handle Stripe webhook events"""
+    try:
+        event = request.get_json()
+        event_type = event.get('type', 'unknown')
+        obj_id = event.get('data', {}).get('object', {}).get('id', 'unknown')
+
+        print(f"[Stripe Webhook] {event_type}: {obj_id}")
+        return jsonify({'received': True})
+
+    except Exception as e:
+        print(f"[Stripe Webhook] Error: {str(e)}")
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5000)
